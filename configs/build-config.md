@@ -2,18 +2,24 @@
 
 이 문서는 환경 구성 명령을 중복 나열하지 않고, **설정의 출처·의미·적용값·점검 방법**을 정리합니다. 실제 진행 순서 및 과거 검증 기록은 [Chapter 1](../docs/01-environment.md)을 참조합니다.
 
-## 1. 현재 기록된 설정
+## 1. 센터·집 설정 비교
 
-| 변수 또는 구성 | 현재 기록된 값 | 설정 출처 |
+설정은 **개발 Host별로 다르게 적용**했습니다. 두 Host를 동일한 `local.conf` 설정으로 취급하지 않습니다. 아래 값은 센터의 기존 문서 및 집 노트북의 사용자 제공 검증 결과를 기준으로 합니다.
+
+| 항목 | 센터(학교) | 집 노트북 |
 |---|---|---|
-| Yocto Project | 6.0.4 (wrynose) | `bitbake-setup`으로 구성한 Setup |
-| `DISTRO` | `poky` | 초기 Setup의 Distribution 선택(`distro/poky`) |
-| `MACHINE` | `raspberrypi4-64` | `machine/raspberrypi4-64` Fragment 활성화 |
-| BSP Layer | `meta-raspberrypi` | `bitbake-layers add-layer` |
-| `BB_NUMBER_THREADS` | `4` | `build/conf/local.conf` |
-| `PARALLEL_MAKE` | `-j 4` | `build/conf/local.conf` |
+| Host | WSL2 Ubuntu (x86-64) | WSL2 Ubuntu 26.04.1 LTS (x86-64) |
+| WSL2 RAM | 15GiB | 7.6GiB |
+| 논리 CPU | 24개(기존 기록) | 미확인 |
+| Yocto | 6.0.4 (wrynose) | 6.0.4 (wrynose) |
+| `DISTRO` | `poky` | `poky` |
+| `MACHINE` | `raspberrypi4-64` | `raspberrypi4-64` |
+| BSP Layer | `meta-raspberrypi` | `meta-raspberrypi` |
+| `BB_NUMBER_THREADS` | `4` | `2` |
+| `PARALLEL_MAKE` | `-j 4` | `-j 2` |
+| `bitbake -p` | 별도 기록 없음 | 성공: 992 `.bb`, 0 errors, Exit 0 |
 
-Host는 WSL2 Ubuntu(x86-64), Target은 Raspberry Pi 4B(ARM64)입니다. 기존 실습 기록상 WSL2 RAM은 15GiB이고 논리 CPU는 24개입니다. 이 Host 수치는 이번 문서 수정에서 새로 측정한 값이 아닙니다.
+설정 출처는 초기 `bitbake-setup`에서 선택한 `poky`, 활성화한 `machine/raspberrypi4-64` Fragment, BSP Layer 등록, 각 Host의 `build/conf/local.conf`입니다. 이번 문서 정비에서 실제 Host 구성 파일을 직접 대조한 것은 아닙니다.
 
 ## 2. Target Machine과 Configuration Fragment
 
@@ -36,14 +42,23 @@ bitbake -e | grep -E '^(MACHINE|DISTRO)='
 
 `list-fragments`는 사용 가능·활성화 상태의 Fragment를 살펴보고, `bitbake -e`는 최종 BitBake 변수 값을 조회합니다.
 
-## 3. 병렬 빌드 제한
+## 3. Host별 병렬 빌드 제한
 
-`build/conf/local.conf`의 기존 기록:
+**센터의 `build/conf/local.conf` (기존 수행 기록)**
 
 ```conf
 BB_NUMBER_THREADS = "4"
 PARALLEL_MAKE = "-j 4"
 ```
+
+**집 노트북의 `build/conf/local.conf` (사용자 제공 설정 기록)**
+
+```conf
+BB_NUMBER_THREADS = "2"
+PARALLEL_MAKE = "-j 2"
+```
+
+집 노트북은 보고된 RAM 7.6GiB를 고려해 센터보다 병렬도를 낮췄습니다. 이는 자원 사용을 줄이기 위한 설정이며, 전체 이미지 빌드 성공 여부나 필요 자원 충족을 증명하지 않습니다.
 
 | 변수 | 역할 |
 |---|---|
@@ -64,12 +79,13 @@ bitbake-layers show-layers
 - 첫 번째 명령: BitBake의 실제 적용 변수 확인
 - 두 번째 명령: 현재 등록된 Layer와 Priority 확인
 
-기존 실습 기록에서는 `MACHINE=raspberrypi4-64`, `DISTRO=poky`, 병렬도 값의 적용, `raspberrypi` Layer Priority 9를 확인했습니다. 이번 수정에서는 WSL을 직접 실행하거나 검증값을 새로 측정하지 않았습니다.
+센터 기존 실습 기록에서는 `MACHINE=raspberrypi4-64`, `DISTRO=poky`, 센터의 병렬도 값 적용 및 `raspberrypi` Layer Priority 9를 확인했습니다. 집 노트북은 설정 완료와 `bitbake -p` 정상 종료가 보고되었습니다. 이는 집에서 `bitbake -e`의 각 변수 출력을 새로 확보했다는 뜻은 아닙니다. 이번 문서 수정에서 WSL을 직접 실행하거나 검증값을 새로 측정하지 않았습니다.
 
 ## 5. 이미지 빌드 상태
 
 - [x] Build Environment 및 BSP Layer 구성 (기존 기록)
-- [x] Target Machine·병렬도 설정 확인 (기존 기록)
+- [x] Target Machine·병렬도 설정 확인 (센터의 기존 기록)
+- [x] 집 노트북 `bitbake -p` Parse 정상 종료 (사용자 제공 결과)
 - [ ] `core-image-minimal` 이미지 빌드
 - [ ] Raspberry Pi 4B에서 이미지 부팅 확인
 

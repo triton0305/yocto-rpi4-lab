@@ -1,6 +1,6 @@
 # Yocto 소스 리비전 관리
 
-학교와 집에서 같은 Yocto 개발 환경을 재현하기 위해 외부 Source의 Commit SHA를 관리합니다. 이 문서의 SHA는 **기존 GitHub 문서에서 확인된 기록값**이며, 2026-10-22 문서 정비 시 실제 WSL Checkout과 새로 대조한 값은 아닙니다.
+학교와 집에서 같은 Yocto 개발 환경을 재현하기 위해 외부 Source의 Commit SHA를 관리합니다. 기본 SHA는 **센터의 기존 GitHub 문서에 기록된 값**입니다. 이후 집 노트북의 독립 BitBake Clone에 대해 동일 SHA가 확인되었다는 **사용자 제공 검증 결과**가 추가되었습니다. 실제 Build Environment가 참조하는 모든 Source Checkout을 GitHub 문서 수정 중 직접 대조한 것은 아닙니다.
 
 ## 1. 기본 구성
 
@@ -16,12 +16,14 @@
 
 | Repository | 기존에 기록된 Commit SHA | 이번 점검 상태 |
 |---|---|---|
-| BitBake | `3ccdabf1ba2b65dde0025ad04f84b80c02a1fd6e` | 로컬 Checkout 미대조 |
+| BitBake | `3ccdabf1ba2b65dde0025ad04f84b80c02a1fd6e` | **집의 독립 Clone ↔ 센터 기록 일치(사용자 제공 결과)**. 실제 Setup의 BitBake 경로는 미대조 |
 | OpenEmbedded-Core | `636e5d3b12d54951c13d57346648bc29a0e6b24e` | 로컬 Checkout 미대조 |
 | meta-raspberrypi | `919588393f41b48cb6c5d832aa35e58a19b6762d` | 로컬 Checkout 미대조 |
 | meta-yocto | **기록 없음** | 실제 Checkout에서 확인 필요 |
 
 `meta-yocto` 값은 기존 문서의 `실제 명령 출력값 입력`이라는 미완성 문구 대신 **기록 없음**으로 표시했습니다. 임의의 SHA를 채우지 않았습니다.
+
+집 노트북의 `~/study/rootfs/yocto/bitbake`에서 보고된 Commit은 센터 기록의 BitBake SHA와 일치합니다. 이는 **독립적으로 내려받은 BitBake 소스의 동일성**만 뒷받침하며, 집에서 `bitbake -p`를 수행한 실제 BitBake 실행 파일의 Checkout까지 이 SHA라고 단정하지 않습니다.
 
 Commit SHA만 기록해서는 설치 패키지, Host 환경, 로컬 설정까지 동일하다고 단정할 수 없습니다. 각 저장소의 Remote URL, Branch, Commit을 함께 점검해야 합니다.
 

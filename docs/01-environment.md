@@ -2,13 +2,13 @@
 
 ## 1. 목표와 검증 범위
 
-WSL2 Ubuntu(x86-64)에서 Yocto Project 6.0.4(wrynose) 환경을 구성하고 Raspberry Pi 4B(ARM64)용 이미지 빌드 준비를 완료한다.
+WSL2 Ubuntu(x86-64)에서 Yocto Project 6.0.4(wrynose) 환경을 구성하고 Raspberry Pi 4B(ARM64)용 이미지 빌드를 준비한다. **센터의 기존 환경 구성 기록**과 **집 노트북의 후속 Parse 검증 기록**을 구분한다.
 
 이 문서의 **검증 완료** 표기는 기존 실습 기록에 근거합니다. 이미지 생성과 Raspberry Pi 실부팅은 아직 수행하지 않았습니다. 별도 표시한 **재현·점검 명령**은 이번 문서 정비에서 WSL에서 다시 실행한 결과가 아닙니다.
 
 ## 2. 작업 디렉터리
 
-기존 실습에서 사용한 로컬 경로는 다음과 같이 기록되어 있습니다.
+센터 실습에서 사용한 로컬 경로는 다음과 같이 기록되어 있습니다. 집 노트북은 동일한 경로의 전체 구조를 이번 자료만으로 재확인하지 않았습니다.
 
 ```text
 ~/study/rootfs/yocto/
@@ -113,7 +113,7 @@ MACHINE_ARCH="raspberrypi4_64"
 
 ## 7. 빌드 병렬도 제한 (수행·검증 기록)
 
-기존 기록상 WSL2 메모리 할당량은 15GiB입니다. 자원 사용을 제한하기 위해 `build/conf/local.conf`에 다음 값을 설정했습니다.
+센터 환경의 기존 기록상 WSL2 메모리 할당량은 15GiB입니다. 자원 사용을 제한하기 위해 센터의 `build/conf/local.conf`에 다음 값을 설정했습니다.
 
 ```conf
 BB_NUMBER_THREADS = "4"
@@ -138,10 +138,68 @@ PARALLEL_MAKE = "-j 4"
 | `core-image-minimal` 이미지 빌드 | 미진행 | 빌드 로그 없음 |
 | Raspberry Pi 4B 부팅 | 미진행 | 실장비 검증 기록 없음 |
 
-**Chapter 1 환경 구성 완료(기존 실습 기준).** 이후 Chapter에서는 이미지 빌드, 산출물 분석, 실제 부팅을 각각 별도로 검증합니다.
+**Chapter 1 환경 구성 완료(기존 센터 기록 및 아래 집 노트북 검증 기준).** 이후 Chapter에서는 이미지 빌드, 산출물 분석, 실제 부팅을 각각 별도로 검증합니다.
+
+## 9. 집 노트북 환경 구성 및 Recipe Parse 검증 (추가 기록)
+
+아래 수치는 **사용자가 제공한 집 노트북 실습 결과**를 옮긴 것입니다. GitHub 문서 수정 작업에서 WSL에 접속하거나 터미널 원본 로그를 직접 재실행·검증하지 않았습니다.
+
+| 항목 | 집 노트북의 보고된 상태 |
+|---|---|
+| Host OS | WSL2 Ubuntu 26.04.1 LTS |
+| RAM | 7.6GiB |
+| Windows C: 여유 공간 | 약 70GB (당시 보고값, 수시로 변동 가능) |
+| Yocto | 6.0.4 (wrynose) 초기화 완료 |
+| OpenEmbedded-Core / meta-raspberrypi | 구성 완료 |
+| DISTRO / MACHINE | `poky` / `raspberrypi4-64` |
+| `BB_NUMBER_THREADS` / `PARALLEL_MAKE` | `2` / `-j 2` |
+| GitHub 저장소 연결 | 완료(사용자 보고, 당시 HEAD는 미대조) |
+| `core-image-minimal` 이미지 빌드 | 미진행 |
+| Raspberry Pi 부팅 | 미진행 |
+
+### 9.1 실행 명령 및 역할
+
+```bash
+bitbake -p
+echo $?
+```
+
+- `bitbake -p`(`--parse-only`): 선택된 Build Configuration에서 Recipe 메타데이터를 파싱한 후 실제 빌드 Task를 실행하지 않고 종료합니다.
+- `echo $?`: 직전에 실행한 명령의 Shell 종료 상태를 확인합니다. `0`은 해당 명령의 정상 종료를 나타냅니다.
+
+**전달받은 실행 요약(원본 전체 로그 미보관):**
+
+```text
+992 .bb files
+2013 targets
+73 skipped
+0 errors
+echo $? -> 0
+```
+
+| 결과 | 이 기록에서 확인 가능한 범위 |
+|---|---|
+| 992 `.bb` files | BitBake가 보고한 Recipe 파일 수 |
+| 2013 targets | 파싱 결과 제공 가능한 Target 항목 수. 각각의 빌드 성공을 뜻하지 않음 |
+| 73 skipped | BitBake가 건너뛴 Recipe 수. 개별 제외 사유는 이 요약에 없음 |
+| 0 errors / Exit code 0 | Parse 단계 정상 종료 |
+| 실제 컴파일·이미지 생성 | **미검증** |
+
+### 9.2 WSL2 경고와 제약
+
+실행 중 `WARNING: You are running bitbake under WSLv2...` 메시지가 보고되었습니다. **경고와 오류를 구분**해야 하며, 이번 Parse 명령은 종료 코드 0으로 끝났습니다. 경고 메시지의 전체 내용은 보관되지 않았으므로 구체적인 원인이나 조치 여부를 임의로 단정하지 않습니다.
+
+집 노트북은 센터보다 RAM이 작아 병렬도를 `2 / -j 2`로 낮춰 사용합니다. 이미지 빌드를 시작하기 전 WSL2 가상 디스크와 Host의 여유 공간을 확인해야 합니다. `bitbake -p` 성공만으로 빌드에 필요한 메모리·디스크 용량이 충분하다고 판정할 수 없습니다.
+
+### 9.3 검증 범위와 다음 단계
+
+집에서도 Build Environment 구성과 Recipe Parse의 정상 종료를 확인했습니다. 다음 Chapter에서는 `bitbake-layers show-recipes busybox`로 Recipe 제공 정보를 조회할 예정이며, **이 명령은 아직 수행 완료로 기록하지 않습니다.**
+
+집 노트북과 센터의 서로 다른 병렬 설정은 [빌드 설정](../configs/build-config.md), 학교↔집 BitBake Checkout 대조 범위는 [소스 리비전](../configs/source-revisions.md)에 각각 관리합니다.
 
 ## 참고 문서
 
 - [Yocto Project 6.0 — Setting Up to Use the Yocto Project](https://docs.yoctoproject.org/6.0/dev-manual/start.html)
 - [Yocto Project 6.0 — Quick Build](https://docs.yoctoproject.org/6.0/brief-yoctoprojectqs/index.html)
 - [Yocto Project 6.0 — Configuration Fragments](https://docs.yoctoproject.org/6.0/ref-manual/fragments.html)
+- [BitBake 2.16 — Command options, `-p` / `--parse-only`](https://docs.yoctoproject.org/bitbake/2.16/bitbake-user-manual/bitbake-user-manual-intro.html)

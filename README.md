@@ -2,7 +2,7 @@
 
 Yocto Project로 Raspberry Pi 4B(ARM64)용 Embedded Linux 시스템을 구성하고, 실제 보드에서 검증하는 실습 저장소입니다.
 
-현재는 개발 환경을 구성한 단계이며, Linux 이미지 빌드·실장비 부팅·Custom Layer 및 Recipe 통합은 완료하지 않았습니다. 문서에는 **완료한 작업**과 **후속 학습 목표**를 구분하여 기록합니다.
+센터와 집 노트북에서 개발 환경을 구성했으며, 집에서는 `bitbake -p` Recipe Parse 검증까지 통과했습니다(사용자 제공 실행 기록). Linux 이미지 빌드·실장비 부팅·Custom Layer 및 Recipe 통합은 아직 완료하지 않았습니다. 문서에는 **완료한 작업**과 **후속 학습 목표**를 구분하여 기록합니다.
 
 ## 목표
 
@@ -23,6 +23,8 @@ Yocto Project로 Raspberry Pi 4B(ARM64)용 Embedded Linux 시스템을 구성하
 | MACHINE | `raspberrypi4-64` |
 | BSP Layer | `meta-raspberrypi` |
 
+빌드 설정은 Host별로 다릅니다. **센터:** RAM 15GiB, `BB_NUMBER_THREADS=4`, `PARALLEL_MAKE="-j 4"`. **집:** RAM 7.6GiB, `BB_NUMBER_THREADS=2`, `PARALLEL_MAKE="-j 2"`(사용자 제공 기록).
+
 환경 구성 절차와 실제 확인 결과는 [Chapter 1](docs/01-environment.md)에, 설정의 출처와 변수 의미는 [빌드 설정](configs/build-config.md)에 기록합니다.
 
 ## 학습 진행 현황
@@ -37,7 +39,7 @@ Yocto Project로 Raspberry Pi 4B(ARM64)용 Embedded Linux 시스템을 구성하
 - [ ] Chapter 8 — Kernel 및 Device Driver 통합
 - [ ] Chapter 9 — 증분 빌드 · 의존성 · 오류 분석
 
-체크한 항목은 기존 실습 기록을 기준으로 합니다. 현재 `core-image-minimal` 빌드와 Raspberry Pi 부팅 검증은 **미진행**입니다.
+체크한 항목은 기존 실습 기록을 기준으로 합니다. 집 노트북에서 `bitbake -p`를 실행해 `.bb` 992개, 2013 targets, 73 skipped, 0 errors, 종료 코드 0을 확인했습니다(사용자 제공 결과). **이는 메타데이터 Parse 검증이며 컴파일·이미지 빌드·실장비 부팅 검증은 아닙니다.**
 
 ## 저장소 구조
 
@@ -51,7 +53,7 @@ yocto-rpi4-lab/
     └── 01-environment.md
 ```
 
-위 구조는 2026-10-22 기준 GitHub `main` 브랜치에 실제 존재하는 파일만 표시한 것입니다. `scripts/`, Custom Layer 및 Recipe 디렉터리는 필요할 때 생성하고 검증 후 추가할 예정입니다.
+위 구조는 GitHub `main` 브랜치에서 확인한 실제 파일만 표시한 것입니다. `scripts/`, Custom Layer 및 Recipe 디렉터리는 필요할 때 생성하고 검증 후 추가할 예정입니다.
 
 ## 기술 문서
 
@@ -71,4 +73,4 @@ yocto-rpi4-lab/
 
 ## 현재 상태
 
-Chapter 1에 기록된 `meta-raspberrypi` 등록, `MACHINE=raspberrypi4-64` 및 병렬도 설정 확인까지 완료했습니다. 다음 단계는 Chapter 2 학습이며, 이미지 빌드와 실장비 부팅은 아직 수행하지 않았습니다.
+Chapter 1 개발 환경 구성 및 집 노트북의 BitBake Parse 검증을 완료했습니다(제공된 실습 결과 기준). 다음 단계는 Chapter 2의 BitBake · Layer · Recipe 분석이며, 이미지 빌드와 실장비 부팅은 아직 수행하지 않았습니다.
