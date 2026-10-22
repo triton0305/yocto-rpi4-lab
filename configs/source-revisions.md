@@ -1,40 +1,67 @@
-# Yocto 소스 버전 관리
+# Yocto 소스 리비전 관리
 
-## 개발 환경
+학교와 집에서 같은 Yocto 개발 환경을 재현하기 위해 외부 Source의 Commit SHA를 관리합니다. 이 문서의 SHA는 **기존 GitHub 문서에서 확인된 기록값**이며, 2026-10-22 문서 정비 시 실제 WSL Checkout과 새로 대조한 값은 아닙니다.
 
-| 항목 | 설정 |
+## 1. 기본 구성
+
+| 항목 | 기록 |
 |---|---|
 | Yocto Project | 6.0.4 (wrynose) |
-| Distribution | poky |
-| Machine | raspberrypi4-64 |
-| Host | WSL2 Ubuntu (x86-64) |
+| DISTRO | `poky` |
+| MACHINE | `raspberrypi4-64` |
+| Host / Target | WSL2 Ubuntu (x86-64) / Raspberry Pi 4B (ARM64) |
+| 환경 구성 방식 | `bitbake-setup init` (`poky-wrynose` 선택 기록) |
 
-## 소스 리비전
+## 2. 기존 문서에 기록된 Source Commit
 
-학교와 집에서 동일한 Yocto 개발 환경을 재현하기 위해 각 Git 저장소의 커밋 ID를 기록한다.
+| Repository | 기존에 기록된 Commit SHA | 이번 점검 상태 |
+|---|---|---|
+| BitBake | `3ccdabf1ba2b65dde0025ad04f84b80c02a1fd6e` | 로컬 Checkout 미대조 |
+| OpenEmbedded-Core | `636e5d3b12d54951c13d57346648bc29a0e6b24e` | 로컬 Checkout 미대조 |
+| meta-raspberrypi | `919588393f41b48cb6c5d832aa35e58a19b6762d` | 로컬 Checkout 미대조 |
+| meta-yocto | **기록 없음** | 실제 Checkout에서 확인 필요 |
 
-| Repository | Git Commit |
-|---|---|
-| BitBake | `3ccdabf1ba2b65dde0025ad04f84b80c02a1fd6e` |
-| OpenEmbedded-Core | `636e5d3b12d54951c13d57346648bc29a0e6b24e` |
-| meta-raspberrypi | `919588393f41b48cb6c5d832aa35e58a19b6762d` |
-| meta-yocto | `실제 명령 출력값 입력` |
+`meta-yocto` 값은 기존 문서의 `실제 명령 출력값 입력`이라는 미완성 문구 대신 **기록 없음**으로 표시했습니다. 임의의 SHA를 채우지 않았습니다.
 
-## 빌드 구성
+Commit SHA만 기록해서는 설치 패키지, Host 환경, 로컬 설정까지 동일하다고 단정할 수 없습니다. 각 저장소의 Remote URL, Branch, Commit을 함께 점검해야 합니다.
 
-```conf
-MACHINE = "raspberrypi4-64"
-DISTRO = "poky"
+## 3. 로컬 Checkout 대조 절차 (미실행 점검 명령)
 
-BB_NUMBER_THREADS = "4"
-PARALLEL_MAKE = "-j 4"
+먼저 이 프로젝트에서 사용한 Setup의 Build Environment를 준비합니다.
+
+```bash
+cd ~/study/rootfs/yocto
+source bitbake-builds/poky-wrynose/build/init-build-env
+bitbake-layers show-layers
 ```
 
-## 저장소 관리 원칙
+`show-layers` 출력에서 Layer의 실제 디렉터리를 확인한 뒤, **각 Git 저장소 최상위 디렉터리**에 대해 아래 명령으로 정보를 수집합니다.
 
-- 외부 Yocto 소스는 별도 디렉터리에서 관리한다.
-- 직접 작성한 Layer, Recipe, Application은 `yocto-rpi4-lab`에서 관리한다.
-- Git Commit ID를 이용해 동일한 소스 버전을 재현한다.
-- 빌드 결과물과 캐시는 GitHub에 업로드하지 않는다.
-- 개발 환경 재구성 시 Yocto 설정과 필요한 Host 패키지도 별도로 확인한다.
+```bash
+git -C ../layers/openembedded-core remote -v
+git -C ../layers/openembedded-core branch --show-current
+git -C ../layers/openembedded-core rev-parse HEAD
 
+git -C ../layers/meta-raspberrypi remote -v
+git -C ../layers/meta-raspberrypi branch --show-current
+git -C ../layers/meta-raspberrypi rev-parse HEAD
+```
+
+위 상대 경로는 기존에 기록된 `poky-wrynose/build` 구조를 기준으로 한 **점검 예시**입니다. 실제 Source 위치가 다르면 `show-layers` 결과에 맞게 변경해야 합니다.
+
+`meta-yocto`와 **실제 빌드에 사용되는 BitBake Git Checkout** 역시 현지 디렉터리를 확인한 다음 같은 `git -C <repository-path> ...` 명령으로 조사합니다. 최초 `git clone`한 `~/study/rootfs/yocto/bitbake`의 Commit이 실제 Setup에서 사용 중인 BitBake와 같다고 가정하지 않습니다.
+
+## 4. 재현할 때 함께 비교할 사항
+
+- Remote URL · Branch · Commit SHA (해당 Checkout의 실제 값)
+- `MACHINE` · `DISTRO` · 활성화한 Fragment 및 Layer 목록
+- `conf/local.conf`의 사용자 설정값
+- Host OS, 필요한 Host Package 및 사용 가능한 RAM·Disk 자원
+- 실제 이미지 빌드와 보드 부팅 결과 (현재 미진행)
+
+설정 자체는 [빌드 설정](build-config.md), 환경 구성·검증 이력은 [Chapter 1](../docs/01-environment.md)을 참조합니다.
+
+## 참고 문서
+
+- [Yocto Project 6.0 — Quick Build](https://docs.yoctoproject.org/6.0/brief-yoctoprojectqs/index.html)
+- [Yocto Project 6.0 — Setting Up to Use the Yocto Project](https://docs.yoctoproject.org/6.0/dev-manual/start.html)
