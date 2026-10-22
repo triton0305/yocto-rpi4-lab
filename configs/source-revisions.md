@@ -25,6 +25,8 @@
 
 집 노트북의 `~/study/rootfs/yocto/bitbake`에서 보고된 Commit은 센터 기록의 BitBake SHA와 일치합니다. 이는 **독립적으로 내려받은 BitBake 소스의 동일성**만 뒷받침하며, 집에서 `bitbake -p`를 수행한 실제 BitBake 실행 파일의 Checkout까지 이 SHA라고 단정하지 않습니다.
 
+센터 값은 과거에 기록된 검증 결과이며 실측 출력 전문은 확보되지 않았습니다([센터 실행 근거](../docs/logs/01-center-setup.md#6-source-revision--검증-결과-기록)).
+
 Commit SHA만 기록해서는 설치 패키지, Host 환경, 로컬 설정까지 동일하다고 단정할 수 없습니다. 각 저장소의 Remote URL, Branch, Commit을 함께 점검해야 합니다.
 
 ## 3. 로컬 Checkout 대조 절차 (미실행 점검 명령)

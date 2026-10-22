@@ -4,7 +4,7 @@
 
 WSL2 Ubuntu(x86-64)에서 Yocto Project 6.0.4(wrynose) 환경을 구성하고 Raspberry Pi 4B(ARM64)용 이미지 빌드를 준비한다. **센터의 기존 환경 구성 기록**과 **집 노트북의 후속 Parse 검증 기록**을 구분한다.
 
-이 문서의 **검증 완료** 표기는 기존 실습 기록에 근거합니다. 이미지 생성과 Raspberry Pi 실부팅은 아직 수행하지 않았습니다. 별도 표시한 **재현·점검 명령**은 이번 문서 정비에서 WSL에서 다시 실행한 결과가 아닙니다.
+이 문서의 **검증 완료** 표기는 기존 실습 기록에 근거합니다. 센터에서 확보된 실제 초기화 오류 원문과 각 단계의 검증 결과는 [센터 실행 근거](logs/01-center-setup.md)에 분리했습니다. 이미지 생성과 Raspberry Pi 실부팅은 아직 수행하지 않았습니다. 별도 표시한 **재현·점검 명령**은 이번 문서 정비에서 WSL에서 다시 실행한 결과가 아닙니다.
 
 ## 2. 작업 디렉터리
 
@@ -54,7 +54,7 @@ source bitbake-builds/poky-wrynose/build/init-build-env
 
 이 스크립트는 현재 Shell에 빌드 환경을 적용하고 Build Directory로 이동하도록 준비합니다. 이후의 `../layers`는 **Build Directory 기준 상대 경로**입니다.
 
-**기록 구분:** 기존 Chapter 1에는 이 `source` 명령의 실행 로그가 남아 있지 않았습니다. 위 명령은 공식 문서 및 기존 경로에 근거한 재현 절차이며, 이번 정비에서 직접 재실행했다고 주장하지 않습니다.
+**기록 구분:** [센터 초기화 오류 원문](logs/01-center-setup.md#1-bitbake-초기화-중-locale-오류--원문-발췌)에는 `bitbake-setup init` 내부에서 `init-build-env`가 호출된 흔적이 있습니다. 그러나 위 `source` 명령을 사용자가 **별도로 수동 실행**했다는 원문 로그는 확보되지 않았습니다. 이 명령은 현재 재현 절차로 제시한 것이며 이번 문서 정비에서 재실행하지 않았습니다.
 
 ## 4. Locale 오류 해결 (수행·검증 기록)
 
@@ -74,7 +74,7 @@ sudo update-locale LANG=en_US.UTF-8
 - `locale-gen`: 지정한 Locale 데이터를 생성합니다.
 - `update-locale`: 시스템 기본 Locale 설정을 갱신합니다.
 
-**검증 기록:** `locale -a`에서 `en_US.utf8` 항목을 확인했습니다.
+**검증 기록:** `locale -a`에서 `en_US.utf8` 항목을 확인했습니다. 실제 실패 시점의 반복 서버 오류와 복구 후 확인값은 [센터 실행 근거](logs/01-center-setup.md)에 증거 유형을 구분하여 정리했습니다.
 
 ## 5. Raspberry Pi BSP Layer 등록 (수행·검증 기록)
 
@@ -138,7 +138,7 @@ PARALLEL_MAKE = "-j 4"
 | `core-image-minimal` 이미지 빌드 | 미진행 | 빌드 로그 없음 |
 | Raspberry Pi 4B 부팅 | 미진행 | 실장비 검증 기록 없음 |
 
-**Chapter 1 환경 구성 완료(기존 센터 기록 및 아래 집 노트북 검증 기준).** 이후 Chapter에서는 이미지 빌드, 산출물 분석, 실제 부팅을 각각 별도로 검증합니다.
+**Chapter 1 환경 구성 완료(기존 센터 기록 및 아래 집 노트북 검증 기준).** 센터의 원문 로그 및 검증 결과의 차이는 [센터 실행 근거](logs/01-center-setup.md)에서 확인할 수 있습니다. 이후 Chapter에서는 이미지 빌드, 산출물 분석, 실제 부팅을 각각 별도로 검증합니다.
 
 ## 9. 집 노트북 환경 구성 및 Recipe Parse 검증 (추가 기록)
 
