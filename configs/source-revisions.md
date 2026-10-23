@@ -1,6 +1,6 @@
 # Yocto 소스 리비전 관리
 
-학교와 집에서 같은 Yocto 개발 환경을 재현하기 위해 외부 Source의 Commit SHA를 관리합니다. 기본 SHA는 **센터의 기존 GitHub 문서에 기록된 값**입니다. 이후 집 노트북의 독립 BitBake Clone에 대해 동일 SHA가 확인되었다는 **사용자 제공 검증 결과**가 추가되었습니다. 실제 Build Environment가 참조하는 모든 Source Checkout을 GitHub 문서 수정 중 직접 대조한 것은 아닙니다.
+학교와 집에서 Yocto 개발 환경의 버전을 비교·재현하기 위해 외부 Source의 Commit SHA를 관리합니다. **센터 값은 기존 실습 기록**, **집 값은 사용자가 제공한 `git rev-parse HEAD` 실제 출력**에 근거합니다. GitHub 문서 수정 과정에서 WSL에 직접 접속하거나 Checkout을 재조회하지 않았습니다.
 
 ## 1. 기본 구성
 
@@ -12,24 +12,25 @@
 | Host / Target | WSL2 Ubuntu (x86-64) / Raspberry Pi 4B (ARM64) |
 | 환경 구성 방식 | `bitbake-setup init` (`poky-wrynose` 선택 기록) |
 
-## 2. 기존 문서에 기록된 Source Commit
+## 2. Source Checkout 비교 (센터 기록 / 집 실행 로그)
 
-| Repository | 기존에 기록된 Commit SHA | 이번 점검 상태 |
+**주의:** 최초 `bitbake-setup` 호출을 위해 독립적으로 Clone한 BitBake와 **실제 Setup이 사용하는 `layers/bitbake`는 별도 Git Checkout**입니다. 각각의 SHA가 서로 다른 것은 이 기록만으로 오류가 아닙니다.
+
+| Git Checkout | 센터 기록 SHA | 집 노트북 실제 확인 SHA |
 |---|---|---|
-| BitBake | `3ccdabf1ba2b65dde0025ad04f84b80c02a1fd6e` | **집의 독립 Clone ↔ 센터 기록 일치(사용자 제공 결과)**. 실제 Setup의 BitBake 경로는 미대조 |
-| OpenEmbedded-Core | `636e5d3b12d54951c13d57346648bc29a0e6b24e` | 로컬 Checkout 미대조 |
-| meta-raspberrypi | `919588393f41b48cb6c5d832aa35e58a19b6762d` | 로컬 Checkout 미대조 |
-| meta-yocto | **기록 없음** | 실제 Checkout에서 확인 필요 |
+| 최상위 초기화용 BitBake | `3ccdabf1ba2b65dde0025ad04f84b80c02a1fd6e` | **동일** |
+| Setup 내부 `layers/bitbake` (실행용) | **미확인** | `6e260eb6ab1631607ea414d9ff8ede1155faa5d9` |
+| `layers/openembedded-core` | `636e5d3b12d54951c13d57346648bc29a0e6b24e` | **동일** |
+| `layers/meta-yocto` | **미확인** | `7c25b11156553145fa6b241a2d4f65d94438f804` |
+| `layers/meta-raspberrypi` | `919588393f41b48cb6c5d832aa35e58a19b6762d` | **동일** |
 
-`meta-yocto` 값은 기존 문서의 `실제 명령 출력값 입력`이라는 미완성 문구 대신 **기록 없음**으로 표시했습니다. 임의의 SHA를 채우지 않았습니다.
+집의 각 SHA는 [집 실행 로그 — Checkout SHA](../docs/logs/01-home-setup.md#10-각-git-checkout의-sha--실행-로그)의 `git rev-parse HEAD` 결과에 근거합니다. 센터는 [센터 실행 근거](../docs/logs/01-center-setup.md)에 기록된 결과이며, 실제 출력 전문이 없는 값은 **기록 기반**입니다.
 
-집 노트북의 `~/study/rootfs/yocto/bitbake`에서 보고된 Commit은 센터 기록의 BitBake SHA와 일치합니다. 이는 **독립적으로 내려받은 BitBake 소스의 동일성**만 뒷받침하며, 집에서 `bitbake -p`를 수행한 실제 BitBake 실행 파일의 Checkout까지 이 SHA라고 단정하지 않습니다.
+**확인된 동등성:** 두 환경의 초기화용 BitBake, OpenEmbedded-Core, meta-raspberrypi에 관한 기록 SHA는 일치합니다. **확인되지 않은 동등성:** 실행용 BitBake와 meta-yocto의 센터 SHA는 미확보입니다. 따라서 양쪽 Build Environment 전체 소스가 동일하다고 주장하지 않습니다.
 
-센터 값은 과거에 기록된 검증 결과이며 실측 출력 전문은 확보되지 않았습니다([센터 실행 근거](../docs/logs/01-center-setup.md#6-source-revision--검증-결과-기록)).
+Commit SHA만으로 Host 패키지, 가용 자원 또는 변경된 설정이 동일하다고 단정할 수 없습니다. 재현 시 Remote URL, Branch, Git HEAD, Layer 및 최종 BitBake 환경 변수를 함께 확인해야 합니다.
 
-Commit SHA만 기록해서는 설치 패키지, Host 환경, 로컬 설정까지 동일하다고 단정할 수 없습니다. 각 저장소의 Remote URL, Branch, Commit을 함께 점검해야 합니다.
-
-## 3. 로컬 Checkout 대조 절차 (미실행 점검 명령)
+## 3. 재현 시 로컬 Checkout 대조 명령
 
 먼저 이 프로젝트에서 사용한 Setup의 Build Environment를 준비합니다.
 
@@ -51,9 +52,9 @@ git -C ../layers/meta-raspberrypi branch --show-current
 git -C ../layers/meta-raspberrypi rev-parse HEAD
 ```
 
-위 상대 경로는 기존에 기록된 `poky-wrynose/build` 구조를 기준으로 한 **점검 예시**입니다. 실제 Source 위치가 다르면 `show-layers` 결과에 맞게 변경해야 합니다.
+이 상대 경로는 집의 `poky-wrynose/build` 구조와 실제 기록으로 확인됐습니다. 센터에서는 실제 Checkout 위치를 먼저 확인한 후 사용해야 합니다.
 
-`meta-yocto`와 **실제 빌드에 사용되는 BitBake Git Checkout** 역시 현지 디렉터리를 확인한 다음 같은 `git -C <repository-path> ...` 명령으로 조사합니다. 최초 `git clone`한 `~/study/rootfs/yocto/bitbake`의 Commit이 실제 Setup에서 사용 중인 BitBake와 같다고 가정하지 않습니다.
+집에서는 `meta-yocto`와 실제 실행용 BitBake의 SHA까지 확인했습니다. **센터는 이 두 Checkout의 SHA가 미확보**이므로 센터의 해당 Git 저장소 루트에서 `git rev-parse HEAD`를 별도로 실행해야 학교·집 동일성을 판단할 수 있습니다. 최초 Clone의 Commit을 Setup 내부 BitBake의 SHA로 대체하지 않습니다.
 
 ## 4. 재현할 때 함께 비교할 사항
 

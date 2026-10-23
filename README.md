@@ -25,7 +25,7 @@ Yocto Project로 Raspberry Pi 4B(ARM64)용 Embedded Linux 시스템을 구성하
 
 빌드 설정은 Host별로 다릅니다. **센터:** RAM 15GiB, `BB_NUMBER_THREADS=4`, `PARALLEL_MAKE="-j 4"`. **집:** RAM 7.6GiB, `BB_NUMBER_THREADS=2`, `PARALLEL_MAKE="-j 2"`(사용자 제공 기록).
 
-환경 구성 절차와 실제 확인 결과는 [Chapter 1](docs/01-environment.md)에, 설정의 출처와 변수 의미는 [빌드 설정](configs/build-config.md)에 기록합니다.
+환경 구성 절차는 [Chapter 1](docs/01-environment.md)에, 실제 출력 증거는 [센터](docs/logs/01-center-setup.md)와 [집](docs/logs/01-home-setup.md) 로그에, 설정값의 의미는 [빌드 설정](configs/build-config.md)에 기록합니다.
 
 ## 학습 진행 현황
 
@@ -52,7 +52,8 @@ yocto-rpi4-lab/
 └── docs/
     ├── 01-environment.md
     └── logs/
-        └── 01-center-setup.md
+        ├── 01-center-setup.md
+        └── 01-home-setup.md
 ```
 
 위 구조는 본 문서 정비 후 GitHub `main` 브랜치에 게시한 실제 파일만 표시한 것입니다. `scripts/`, Custom Layer 및 Recipe 디렉터리는 필요할 때 생성하고 검증 후 추가할 예정입니다.
@@ -62,7 +63,8 @@ yocto-rpi4-lab/
 | 문서 | 역할 |
 |---|---|
 | [Chapter 1 — 개발 환경 구성](docs/01-environment.md) | 수행한 명령·원리·환경 검증 |
-| [센터 Chapter 1 실행 근거](docs/logs/01-center-setup.md) | 보존된 원문 로그와 검증 결과·미확인 항목 구분 |
+| [센터 Chapter 1 실행 근거](docs/logs/01-center-setup.md) | 센터의 오류 원문·검증 결과·미확인 항목 |
+| [집 Chapter 1 실행 로그](docs/logs/01-home-setup.md) | 집의 명령·실제 출력·Checkout SHA·Parse 결과 |
 | [빌드 설정](configs/build-config.md) | 설정값·적용 위치·동작 원리·확인 명령 |
 | [소스 리비전](configs/source-revisions.md) | 외부 저장소의 기록된 Commit SHA 및 재현성 점검 |
 

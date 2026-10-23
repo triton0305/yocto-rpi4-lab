@@ -10,7 +10,7 @@
 |---|---|---|
 | Host | WSL2 Ubuntu (x86-64) | WSL2 Ubuntu 26.04.1 LTS (x86-64) |
 | WSL2 RAM | 15GiB | 7.6GiB |
-| 논리 CPU | 24개(기존 기록) | 미확인 |
+| 논리 CPU | 24개(기존 기록) | **8개** (`nproc` 출력) |
 | Yocto | 6.0.4 (wrynose) | 6.0.4 (wrynose) |
 | `DISTRO` | `poky` | `poky` |
 | `MACHINE` | `raspberrypi4-64` | `raspberrypi4-64` |
@@ -19,7 +19,7 @@
 | `PARALLEL_MAKE` | `-j 4` | `-j 2` |
 | `bitbake -p` | 별도 기록 없음 | 성공: 992 `.bb`, 0 errors, Exit 0 |
 
-설정 출처는 초기 `bitbake-setup`에서 선택한 `poky`, 활성화한 `machine/raspberrypi4-64` Fragment, BSP Layer 등록, 각 Host의 `build/conf/local.conf`입니다. 이번 문서 정비에서 실제 Host 구성 파일을 직접 대조한 것은 아닙니다.
+설정 출처는 초기 `bitbake-setup`에서 선택한 `poky`, 활성화한 `machine/raspberrypi4-64` Fragment, BSP Layer 등록, 각 Host의 `build/conf/local.conf`입니다. 집 노트북에서는 `bitbake -e` 적용값의 실제 출력이 [집 실행 로그](../docs/logs/01-home-setup.md)에 보존되어 있습니다. 이 문서 수정 중 실제 WSL에서 새로 측정하지는 않았습니다.
 
 ## 2. Target Machine과 Configuration Fragment
 
@@ -51,7 +51,7 @@ BB_NUMBER_THREADS = "4"
 PARALLEL_MAKE = "-j 4"
 ```
 
-**집 노트북의 `build/conf/local.conf` (사용자 제공 설정 기록)**
+**집 노트북의 `build/conf/local.conf` (사용자 제공 설정·적용값 검증 기록)**
 
 ```conf
 BB_NUMBER_THREADS = "2"
@@ -79,7 +79,7 @@ bitbake-layers show-layers
 - 첫 번째 명령: BitBake의 실제 적용 변수 확인
 - 두 번째 명령: 현재 등록된 Layer와 Priority 확인
 
-센터 기존 실습 기록에서는 `MACHINE=raspberrypi4-64`, `DISTRO=poky`, 센터의 병렬도 값 적용 및 `raspberrypi` Layer Priority 9를 확인했습니다. 집 노트북은 설정 완료와 `bitbake -p` 정상 종료가 보고되었습니다. 이는 집에서 `bitbake -e`의 각 변수 출력을 새로 확보했다는 뜻은 아닙니다. 이번 문서 수정에서 WSL을 직접 실행하거나 검증값을 새로 측정하지 않았습니다.
+센터 기존 실습 기록에서는 `MACHINE=raspberrypi4-64`, `DISTRO=poky`, 센터 병렬도 값 적용 및 `raspberrypi` Layer Priority 9를 확인했습니다. 집 노트북에서는 `bitbake -e`로 `MACHINE`, `DISTRO`, 병렬도 `2 / -j 2`의 실제 출력이 확보됐고 `bitbake -p` 또한 정상 종료했습니다. 출력 상세는 [집 실행 로그](../docs/logs/01-home-setup.md)에 있습니다. 이번 문서 수정 중 WSL에 접속하여 재측정하지는 않았습니다.
 
 ## 5. 이미지 빌드 상태
 

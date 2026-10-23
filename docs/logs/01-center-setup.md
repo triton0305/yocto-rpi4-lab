@@ -148,4 +148,4 @@ PARALLEL_MAKE = "-j 4"
 | `core-image-minimal` 이미지 빌드 | 미진행 | 수행 기록 없음 |
 | Raspberry Pi 4B 부팅 | 미진행 | 실장비 증거 없음 |
 
-**증거 판정:** 센터 Chapter 1의 환경 설정과 확인 결과는 기록되어 있지만, 모든 단계의 터미널 출력 전문이 확보된 것은 아닙니다. 집 WSL에서 확인한 `bitbake -p` 성공은 [Chapter 1의 집 검증 절](../01-environment.md#9-집-노트북-환경-구성-및-recipe-parse-검증-추가-기록)에 별도로 보존합니다.
+**증거 판정:** 센터 Chapter 1의 환경 설정과 확인 결과는 기록되어 있지만, 모든 단계의 터미널 출력 전문이 확보된 것은 아닙니다. 집 WSL에서 확인한 `bitbake -p` 성공과 터미널 전체 증거는 [집 Chapter 1 실행 로그](01-home-setup.md)에 별도로 보존합니다.

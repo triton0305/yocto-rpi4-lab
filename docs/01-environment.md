@@ -4,11 +4,11 @@
 
 WSL2 Ubuntu(x86-64)에서 Yocto Project 6.0.4(wrynose) 환경을 구성하고 Raspberry Pi 4B(ARM64)용 이미지 빌드를 준비한다. **센터의 기존 환경 구성 기록**과 **집 노트북의 후속 Parse 검증 기록**을 구분한다.
 
-이 문서의 **검증 완료** 표기는 기존 실습 기록에 근거합니다. 센터에서 확보된 실제 초기화 오류 원문과 각 단계의 검증 결과는 [센터 실행 근거](logs/01-center-setup.md)에 분리했습니다. 이미지 생성과 Raspberry Pi 실부팅은 아직 수행하지 않았습니다. 별도 표시한 **재현·점검 명령**은 이번 문서 정비에서 WSL에서 다시 실행한 결과가 아닙니다.
+이 문서의 **검증 완료** 표기는 기존 실습 기록에 근거합니다. 센터에서 확보된 초기화 오류 원문과 확인 결과는 [센터 실행 근거](logs/01-center-setup.md)에, 집에서 제공된 터미널 출력은 [집 실행 로그](logs/01-home-setup.md)에 분리했습니다. 이미지 생성과 Raspberry Pi 실부팅은 아직 수행하지 않았습니다. 별도 표시한 **재현·점검 명령**은 이번 문서 정비에서 WSL에서 다시 실행한 결과가 아닙니다.
 
 ## 2. 작업 디렉터리
 
-센터 실습에서 사용한 로컬 경로는 다음과 같이 기록되어 있습니다. 집 노트북은 동일한 경로의 전체 구조를 이번 자료만으로 재확인하지 않았습니다.
+센터 실습에서 사용한 경로는 다음과 같습니다. 집 노트북에서도 `pwd`, `command -v bitbake`와 Git 조회 결과로 해당 `poky-wrynose/build`·`layers` 경로 및 최상위 BitBake Clone 경로를 확인했습니다([집 실행 로그](logs/01-home-setup.md)).
 
 ```text
 ~/study/rootfs/yocto/
@@ -54,7 +54,7 @@ source bitbake-builds/poky-wrynose/build/init-build-env
 
 이 스크립트는 현재 Shell에 빌드 환경을 적용하고 Build Directory로 이동하도록 준비합니다. 이후의 `../layers`는 **Build Directory 기준 상대 경로**입니다.
 
-**기록 구분:** [센터 초기화 오류 원문](logs/01-center-setup.md#1-bitbake-초기화-중-locale-오류--원문-발췌)에는 `bitbake-setup init` 내부에서 `init-build-env`가 호출된 흔적이 있습니다. 그러나 위 `source` 명령을 사용자가 **별도로 수동 실행**했다는 원문 로그는 확보되지 않았습니다. 이 명령은 현재 재현 절차로 제시한 것이며 이번 문서 정비에서 재실행하지 않았습니다.
+**기록 구분:** [센터 초기화 오류 원문](logs/01-center-setup.md#1-bitbake-초기화-중-locale-오류--원문-발췌)에서는 `bitbake-setup init`의 내부 `init-build-env` 호출을 확인했지만 센터의 별도 수동 `source` 로그는 없습니다. **집 노트북은 `source` 실행 뒤 `pwd`와 `command -v bitbake`를 확인한 원문 출력이 있습니다**([집 실행 로그](logs/01-home-setup.md#7-build-environment-진입-및-초기-layer--실행-로그)). 이번 문서 수정 과정에서 WSL을 직접 재실행하지는 않았습니다.
 
 ## 4. Locale 오류 해결 (수행·검증 기록)
 
@@ -140,62 +140,40 @@ PARALLEL_MAKE = "-j 4"
 
 **Chapter 1 환경 구성 완료(기존 센터 기록 및 아래 집 노트북 검증 기준).** 센터의 원문 로그 및 검증 결과의 차이는 [센터 실행 근거](logs/01-center-setup.md)에서 확인할 수 있습니다. 이후 Chapter에서는 이미지 빌드, 산출물 분석, 실제 부팅을 각각 별도로 검증합니다.
 
-## 9. 집 노트북 환경 구성 및 Recipe Parse 검증 (추가 기록)
+## 9. 집 노트북 환경 구성 및 Recipe Parse 검증
 
-아래 수치는 **사용자가 제공한 집 노트북 실습 결과**를 옮긴 것입니다. GitHub 문서 수정 작업에서 WSL에 접속하거나 터미널 원본 로그를 직접 재실행·검증하지 않았습니다.
+이 절은 2026-10-22~23 집 WSL2에서 수행한 환경 구성과 Parse 검증의 **요약**입니다. 전체 명령어·출력 및 중복 Setup 정리 과정은 [집 Chapter 1 실행 로그](logs/01-home-setup.md)를 참조합니다. 수치는 사용자가 제공한 터미널 기록에 근거하며, GitHub 문서 수정 중 명령을 직접 재실행하지 않았습니다.
 
-| 항목 | 집 노트북의 보고된 상태 |
+| 항목 | 확인된 집 노트북 결과 |
 |---|---|
 | Host OS | WSL2 Ubuntu 26.04.1 LTS |
-| RAM | 7.6GiB |
-| Windows C: 여유 공간 | 약 70GB (당시 보고값, 수시로 변동 가능) |
-| Yocto | 6.0.4 (wrynose) 초기화 완료 |
-| OpenEmbedded-Core / meta-raspberrypi | 구성 완료 |
-| DISTRO / MACHINE | `poky` / `raspberrypi4-64` |
-| `BB_NUMBER_THREADS` / `PARALLEL_MAKE` | `2` / `-j 2` |
-| GitHub 저장소 연결 | 완료(사용자 보고, 당시 HEAD는 미대조) |
-| `core-image-minimal` 이미지 빌드 | 미진행 |
-| Raspberry Pi 부팅 | 미진행 |
+| 논리 CPU / RAM / Swap | 8 / 7.6GiB / 2.0GiB |
+| 당시 Windows C: 여유 공간 | 70G (실제 물리 여유 공간은 변동 가능) |
+| Yocto / DISTRO / MACHINE | 6.0.4 (wrynose) / `poky` / `raspberrypi4-64` |
+| BSP Layer | `raspberrypi` Priority 9 포함 총 4개 |
+| 병렬도 | `BB_NUMBER_THREADS=2`, `PARALLEL_MAKE="-j 2"` |
+| 실행용 BitBake | `layers/bitbake/bin/bitbake` |
+| BitBake Recipe Parse | 992 `.bb`, 2013 targets, 73 skipped, 0 masked, 0 errors, Exit 0 |
+| WSL2 경고 | VHDX 저장 공간 최적화 권고 1건 |
+| 이미지 빌드 / Raspberry Pi 부팅 | **미진행 / 미진행** |
 
-### 9.1 실행 명령 및 역할
+집에서 실제 실행했다고 제공된 명령:
 
 ```bash
 bitbake -p
 echo $?
 ```
 
-- `bitbake -p`(`--parse-only`): 선택된 Build Configuration에서 Recipe 메타데이터를 파싱한 후 실제 빌드 Task를 실행하지 않고 종료합니다.
-- `echo $?`: 직전에 실행한 명령의 Shell 종료 상태를 확인합니다. `0`은 해당 명령의 정상 종료를 나타냅니다.
-
-**전달받은 실행 요약(원본 전체 로그 미보관):**
+발췌 결과:
 
 ```text
-992 .bb files
-2013 targets
-73 skipped
-0 errors
-echo $? -> 0
+Parsing of 992 .bb files complete (0 cached, 992 parsed). 2013 targets, 73 skipped, 0 masked, 0 errors.
+Summary: There was 1 WARNING message.
 ```
 
-| 결과 | 이 기록에서 확인 가능한 범위 |
-|---|---|
-| 992 `.bb` files | BitBake가 보고한 Recipe 파일 수 |
-| 2013 targets | 파싱 결과 제공 가능한 Target 항목 수. 각각의 빌드 성공을 뜻하지 않음 |
-| 73 skipped | BitBake가 건너뛴 Recipe 수. 개별 제외 사유는 이 요약에 없음 |
-| 0 errors / Exit code 0 | Parse 단계 정상 종료 |
-| 실제 컴파일·이미지 생성 | **미검증** |
+종료 코드 `0`을 확인했습니다. `-p`는 Recipe 메타데이터의 Parse Only 동작으로, **컴파일·이미지 생성·실부팅 성공을 의미하지 않습니다.** WSL2 관련 경고는 파싱 오류와 구분하고, 전체 빌드 전에 Host 저장 공간을 확인합니다.
 
-### 9.2 WSL2 경고와 제약
-
-실행 중 `WARNING: You are running bitbake under WSLv2...` 메시지가 보고되었습니다. **경고와 오류를 구분**해야 하며, 이번 Parse 명령은 종료 코드 0으로 끝났습니다. 경고 메시지의 전체 내용은 보관되지 않았으므로 구체적인 원인이나 조치 여부를 임의로 단정하지 않습니다.
-
-집 노트북은 센터보다 RAM이 작아 병렬도를 `2 / -j 2`로 낮춰 사용합니다. 이미지 빌드를 시작하기 전 WSL2 가상 디스크와 Host의 여유 공간을 확인해야 합니다. `bitbake -p` 성공만으로 빌드에 필요한 메모리·디스크 용량이 충분하다고 판정할 수 없습니다.
-
-### 9.3 검증 범위와 다음 단계
-
-집에서도 Build Environment 구성과 Recipe Parse의 정상 종료를 확인했습니다. 다음 Chapter에서는 `bitbake-layers show-recipes busybox`로 Recipe 제공 정보를 조회할 예정이며, **이 명령은 아직 수행 완료로 기록하지 않습니다.**
-
-집 노트북과 센터의 서로 다른 병렬 설정은 [빌드 설정](../configs/build-config.md), 학교↔집 BitBake Checkout 대조 범위는 [소스 리비전](../configs/source-revisions.md)에 각각 관리합니다.
+집·센터의 설정 차이는 [빌드 설정](../configs/build-config.md), 각 Source의 Git SHA는 [소스 리비전](../configs/source-revisions.md)을 참조합니다. Chapter 2 첫 조회 예정 명령은 `bitbake-layers show-recipes busybox`이며 여기서는 수행 완료로 처리하지 않습니다.
 
 ## 참고 문서
 
