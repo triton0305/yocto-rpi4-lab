@@ -2,7 +2,7 @@
 
 Yocto Project로 Raspberry Pi 4B(ARM64)용 Embedded Linux 시스템을 구성하고, 실제 보드에서 검증하는 실습 저장소입니다.
 
-**주 빌드 환경(Primary Build Host)**과 로컬 **개발 환경(Local Development Host)**에 개발 환경을 구성했습니다. 로컬 개발 환경에서는 `bitbake -p`를 통한 Recipe Parse 검증까지 통과했습니다(사용자 제공 실행 기록). Linux 이미지 빌드·실장비 부팅·Custom Layer 및 Recipe 통합은 아직 완료하지 않았습니다. 문서에는 **완료한 작업**과 **후속 학습 목표**를 구분하여 기록합니다.
+**주 빌드 환경**(Primary Build Host)과 **로컬 개발 환경**(Local Development Host)에 개발 환경을 구성했습니다. 로컬 개발 환경에서는 `bitbake -p`를 통한 Recipe Parse 검증까지 통과했습니다. Linux 이미지 빌드·실장비 부팅·Custom Layer 및 Recipe 통합은 아직 완료하지 않았습니다. 문서에는 **완료한 작업**과 **후속 학습 목표**를 구분하여 기록합니다.
 
 ## 목표
 
