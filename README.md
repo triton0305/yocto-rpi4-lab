@@ -2,7 +2,7 @@
 
 **Yocto Project 6.0.4 (`wrynose`) 기반 Raspberry Pi 4B용 ARM64 Embedded Linux 이미지 빌드 및 실장비 검증 기록**
 
-WSL2 환경에서 BitBake·OpenEmbedded 메타데이터를 분석하고, `core-image-minimal`을 빌드해 Raspberry Pi 4B에 배포했습니다. 이미지 생성에서 끝내지 않고 **UART 부팅·로그인, RootFS, Ethernet 연결, 외부 커널 모듈 삽입·제거**까지 실제 장비에서 확인한 과정과 문제 해결 근거를 기록합니다.
+WSL2 환경에서 BitBake·OpenEmbedded 메타데이터를 분석하고, `core-image-minimal`을 빌드해 Raspberry Pi 4B에 배포했습니다. **UART 부팅·로그인, RootFS, Ethernet 연결, 외부 커널 모듈 삽입·제거**를 실제 장비에서 검증한 과정과 문제 해결 결과를 기록합니다.
 
 > **검증 환경:** **주 빌드 환경(센터)**에서 이미지 빌드와 실장비 부팅·통신 검증을 수행했습니다. **보조 개발 환경(집)**에서는 Recipe Parse 및 BitBake 메타데이터 분석을 수행했습니다.
 
@@ -17,7 +17,7 @@ WSL2 환경에서 BitBake·OpenEmbedded 메타데이터를 분석하고, `core-i
 | 시스템 / 통신 | Linux `6.18.33-v8`, AArch64 커널, ext4 RootFS; Ethernet DHCP 및 외부 IP ping **4/4** | [Chapter 5](docs/05-raspberrypi-boot.md) |
 | 외부 커널 모듈 | Yocto Recipe로 `hello_drv.ko` 빌드, 전송 및 `insmod`·`dmesg`·`rmmod` 검증 | [실장비 로그](docs/05-raspberrypi-boot.md) · [소스](examples/hello-drv/README.md) |
 
-**주요 문제 해결:** 최초 이미지에서 부팅 후 `root` 로그인이 되지 않아 개발용 로그인 설정 Fragment를 적용하고 이미지를 증분 빌드·재기록해 로그인에 성공했습니다. 커널 메타데이터 Fetch 경고는 해당 Task의 최종 성공 여부를 로그로 구분했습니다. 원인과 확인되지 않은 부분은 각 Chapter에 별도로 명시했습니다.
+**주요 문제 해결:** 최초 이미지의 `root` 로그인 실패를 확인하고 개발용 로그인 설정 Fragment를 적용해 증분 빌드·재기록한 뒤 로그인을 검증했습니다. 커널 메타데이터 Fetch 경고는 Task 실행 로그를 추적해 최종 성공 상태를 확인했습니다.
 
 ## 시스템 구성과 작업 흐름
 
@@ -42,8 +42,6 @@ Host (WSL2 / x86-64)
                 └─ hello_drv.ko 수동 적재·제거
 ```
 
-**구분할 점:** `bitbake -p`의 Parse 성공은 전체 이미지 빌드 성공을 뜻하지 않습니다. 또한 `.wic.bz2`의 무결성 검사와 실장비 부팅 검증은 별개의 확인 단계입니다. Chapter 5의 커널 모듈은 수동으로 전송·적재했으며, 이미지에 기본 포함하거나 자동 로드한 결과는 아닙니다.
-
 ## 개발 환경
 
 | 항목 | 센터 | 집 |
@@ -56,7 +54,7 @@ Host (WSL2 / x86-64)
 
 공통 Target 및 빌드 구성: **Raspberry Pi 4 Model B**, ARM64/AArch64, Yocto Project **6.0.4 (`wrynose`)**, `DISTRO=poky`, `MACHINE=raspberrypi4-64`, BSP Layer **`meta-raspberrypi`**.
 
-두 Host의 경로·자원·Checkout SHA는 혼용하지 않습니다. 환경별 상세 설정은 [Chapter 1](docs/01-environment.md), [빌드 설정](configs/build-config.md), [소스 리비전](configs/source-revisions.md)을 참조하세요.
+Host별 경로·자원·Checkout SHA는 [Chapter 1](docs/01-environment.md), [빌드 설정](configs/build-config.md), [소스 리비전](configs/source-revisions.md)에 정리했습니다.
 
 ## 문서 바로가기
 
@@ -97,12 +95,4 @@ yocto-rpi4-lab/
         └── 01-home-setup.md
 ```
 
-`examples/hello-drv/`에는 실장비에서 검증한 모듈의 소스 및 Recipe를 보관합니다. Yocto 전체 소스 트리나 빌드 산출물은 포함하지 않습니다.
-
-## 검증 및 재현 기준
-
-- **실행한 명령·관찰된 출력·해석·미검증 사항**을 구분합니다.
-- 오류는 발생 현상과 후속 확인 결과를 기록하고, 증거가 없는 근본 원인은 단정하지 않습니다.
-- 센터와 집의 OS·병렬도·빌드 경로 및 Git SHA를 분리해 기술합니다.
-- 원본 Yocto Source, 다운로드 캐시, 이미지 및 빌드 산출물은 GitHub에 직접 커밋하지 않고, 생성 과정과 확인 결과를 문서화합니다.
-- 실장비 검증에서 사용한 비밀번호 없는 root 로그인 허용은 **개발용 설정**이며, 제품용 보안 구성으로 사용하지 않습니다.
+`examples/hello-drv/`에는 Raspberry Pi 4B에서 검증한 외부 커널 모듈의 C 소스, Makefile, Yocto Recipe를 정리했습니다.
