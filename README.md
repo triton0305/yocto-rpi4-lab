@@ -4,7 +4,7 @@
 
 WSL2 환경에서 BitBake·OpenEmbedded 메타데이터를 분석하고, `core-image-minimal`을 빌드해 Raspberry Pi 4B에 배포했습니다. 이미지 생성에서 끝내지 않고 **UART 부팅·로그인, RootFS, Ethernet 연결, 외부 커널 모듈 삽입·제거**까지 실제 장비에서 확인한 과정과 문제 해결 근거를 기록합니다.
 
-> **현재 검증 범위:** **주 빌드 환경(센터)**에서 이미지 빌드 및 실장비 부팅을 완료했습니다. **보조 개발 환경(집)**에서는 Recipe Parse와 메타데이터 분석을 수행했습니다. Custom C Application의 이미지 통합이나 Device Driver의 자동 패키징·로드까지 완료한 프로젝트는 아닙니다.
+> **검증 환경:** **주 빌드 환경(센터)**에서 이미지 빌드와 실장비 부팅·통신 검증을 수행했습니다. **보조 개발 환경(집)**에서는 Recipe Parse 및 BitBake 메타데이터 분석을 수행했습니다.
 
 ## 검증 결과 한눈에 보기
 
@@ -15,7 +15,7 @@ WSL2 환경에서 BitBake·OpenEmbedded 메타데이터를 분석하고, `core-i
 | 이미지 산출물 | ARM64 Kernel `Image`, Raspberry Pi 4B DTB, RootFS, Wic 이미지 확인; `.wic.bz2` 압축 무결성 검사 통과 | [Chapter 3](docs/03-arm64-image-build.md) |
 | 실장비 부팅 | Raspberry Pi 4B UART 콘솔 진입 및 `root` 로그인 성공 | [Chapter 5](docs/05-raspberrypi-boot.md) |
 | 시스템 / 통신 | Linux `6.18.33-v8`, AArch64 커널, ext4 RootFS; Ethernet DHCP 및 외부 IP ping **4/4** | [Chapter 5](docs/05-raspberrypi-boot.md) |
-| 커널 모듈 선행 실습 | `hello_drv.ko` 빌드·전송·`insmod`·`dmesg`·`rmmod` 검증 | [Chapter 5](docs/05-raspberrypi-boot.md) |
+| 외부 커널 모듈 | Yocto Recipe로 `hello_drv.ko` 빌드, 전송 및 `insmod`·`dmesg`·`rmmod` 검증 | [실장비 로그](docs/05-raspberrypi-boot.md) · [소스](examples/hello-drv/README.md) |
 
 **주요 문제 해결:** 최초 이미지에서 부팅 후 `root` 로그인이 되지 않아 개발용 로그인 설정 Fragment를 적용하고 이미지를 증분 빌드·재기록해 로그인에 성공했습니다. 커널 메타데이터 Fetch 경고는 해당 Task의 최종 성공 여부를 로그로 구분했습니다. 원인과 확인되지 않은 부분은 각 Chapter에 별도로 명시했습니다.
 
@@ -58,22 +58,6 @@ Host (WSL2 / x86-64)
 
 두 Host의 경로·자원·Checkout SHA는 혼용하지 않습니다. 환경별 상세 설정은 [Chapter 1](docs/01-environment.md), [빌드 설정](configs/build-config.md), [소스 리비전](configs/source-revisions.md)을 참조하세요.
 
-## 학습 및 검증 진행 현황
-
-| Chapter | 내용 | 상태 |
-|---|---|---|
-| [01](docs/01-environment.md) | 개발 환경 구성, Locale 오류 해결, BSP·Machine 설정 | 완료 |
-| [02](docs/02-bitbake-layer-recipe.md) | BitBake·Layer·Recipe·Provider·Task·Image 메타데이터 분석 | 완료 |
-| [03](docs/03-arm64-image-build.md) | ARM64 `core-image-minimal` 최초 빌드와 산출물 검증 | 완료 |
-| 04 | RootFS 및 이미지 산출물 심화 분석 | 별도 Chapter 미완료 |
-| [05](docs/05-raspberrypi-boot.md) | Raspberry Pi 4B UART 부팅, 로그인, 네트워크 및 모듈 선행 검증 | 완료 |
-| 06 | Custom Layer 제작 | 예정 |
-| 07 | Custom Recipe 및 C Application 통합 | 예정 |
-| 08 | Kernel / Device Driver 이미지 통합 | 예정 — 모듈 수동 적재만 선행 검증 |
-| 09 | 증분 빌드·의존성·오류 분석 심화 | 예정 — 일부 사례는 Chapter 3·5에 기록 |
-
-Chapter 4의 일부 주제(이미지 형식·파티션·마운트)는 Chapter 3·5에서 확인했지만 **Chapter 4 전체를 완료 처리하지 않았습니다.** Chapter 1·2에 남아 있는 과거의 ‘이미지 빌드 미진행’ 표현은 해당 실습 시점의 상태이며, 이후 센터에서 진행한 Chapter 3·5의 성공과 구분됩니다.
-
 ## 문서 바로가기
 
 | 문서 | 핵심 내용 |
@@ -81,9 +65,10 @@ Chapter 4의 일부 주제(이미지 형식·파티션·마운트)는 Chapter 3�
 | [Chapter 1 — 환경 구성](docs/01-environment.md) | Setup, Locale 문제, BSP Layer 및 Machine 설정 |
 | [Chapter 2 — BitBake·Layer·Recipe](docs/02-bitbake-layer-recipe.md) | 실제 명령·출력으로 분석한 Provider, Task 의존성, 설정 |
 | [Chapter 3 — ARM64 Image Build](docs/03-arm64-image-build.md) | 4,025 Tasks 빌드, Fetch 경고 확인, 배포 산출물 검사 |
-| [Chapter 5 — 실장비 부팅·검증](docs/05-raspberrypi-boot.md) | Wic, UART, root 로그인 해결, Ethernet, `hello_drv.ko` |
+| [Chapter 5 — 실장비 부팅·검증](docs/05-raspberrypi-boot.md) | Wic, UART, root 로그인 문제 해결, Ethernet 및 외부 커널 모듈 실증 |
 | [센터 환경 실행 근거](docs/logs/01-center-setup.md) | 환경 구성 오류 및 검증 기록 |
 | [집 환경 실행 로그](docs/logs/01-home-setup.md) | Setup, Checkout SHA, Parse 성공 기록 |
+| [외부 커널 모듈 코드](examples/hello-drv/README.md) | `hello_drv.c`, Makefile, `hello-drv_1.0.bb` 예제 소스 |
 | [빌드 설정](configs/build-config.md) | Host별 설정값과 의미 |
 | [소스 리비전](configs/source-revisions.md) | Checkout Commit SHA 및 재현성 확인 |
 
@@ -95,6 +80,13 @@ yocto-rpi4-lab/
 ├── configs/
 │   ├── build-config.md
 │   └── source-revisions.md
+├── examples/
+│   └── hello-drv/
+│       ├── README.md
+│       ├── hello-drv_1.0.bb
+│       └── files/
+│           ├── hello_drv.c
+│           └── Makefile
 └── docs/
     ├── 01-environment.md
     ├── 02-bitbake-layer-recipe.md
@@ -105,12 +97,12 @@ yocto-rpi4-lab/
         └── 01-home-setup.md
 ```
 
-> 위 구조는 **Chapter 3·5 및 README 수정본을 GitHub에 함께 반영할 때의 목표 구조**입니다. 최종 반영 전에는 GitHub에 존재하는 파일 목록과 다를 수 있습니다.
+`examples/hello-drv/`에는 실장비에서 검증한 모듈의 소스 및 Recipe를 보관합니다. Yocto 전체 소스 트리나 빌드 산출물은 포함하지 않습니다.
 
-## 기록 및 재현 원칙
+## 검증 및 재현 기준
 
 - **실행한 명령·관찰된 출력·해석·미검증 사항**을 구분합니다.
 - 오류는 발생 현상과 후속 확인 결과를 기록하고, 증거가 없는 근본 원인은 단정하지 않습니다.
 - 센터와 집의 OS·병렬도·빌드 경로 및 Git SHA를 분리해 기술합니다.
 - 원본 Yocto Source, 다운로드 캐시, 이미지 및 빌드 산출물은 GitHub에 직접 커밋하지 않고, 생성 과정과 확인 결과를 문서화합니다.
-- Chapter 5의 비밀번호 없는 root 로그인 허용은 **실습용 설정**이며, 실제 배포용 보안 구성으로 권장하지 않습니다.
+- 실장비 검증에서 사용한 비밀번호 없는 root 로그인 허용은 **개발용 설정**이며, 제품용 보안 구성으로 사용하지 않습니다.
