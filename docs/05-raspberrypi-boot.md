@@ -1,14 +1,13 @@
 # Chapter 5 — Raspberry Pi 4B Yocto 실장비 부팅·검증
 
 > **실습일:** 2026-10-25  
-> **목적:** Yocto로 만든 ARM64 Linux 이미지를 SD 카드에 기록하고, Raspberry Pi 4B에서 UART 로그인·RootFS·네트워크를 검증한다. 이어서 **이미지를 다시 굽지 않고** 외부 커널 모듈을 빌드·전송·삽입·제거하는 선행 실습까지 진행한다.  
+> **목적:** ARM64 Linux 이미지의 SD 카드 기록부터 UART 로그인·RootFS·네트워크 검증까지 진행하고, 외부 커널 모듈의 빌드·전송·삽입·제거를 실제 장비에서 확인한다.  
 > **결과:** 부팅 성공 / root 로그인 성공 / Ethernet 통신 성공 / 외부 커널 모듈 `hello_drv.ko` 삽입·제거 성공  
-> **범위:** Chapter 5 본 실습 + Chapter 8(커널 모듈) 선행 검증
 
 > [!IMPORTANT]
 > 이 문서는 당시 **실제로 실행한 명령과 확인된 출력**을 기준으로 작성했다. `실제 출력` 블록은 당시 기록의 발췌이며, IP 주소·시간·이미지 타임스탬프·디스크 번호 등은 다시 실행하면 달라질 수 있다. 파일이 생성됐다는 사실과 실장비에서 동작했다는 사실을 구분해서 기록한다.
 >
-> **공개 기록 안내:** 재현성을 위해 실습 당시의 로컬 IP, 사용자명 및 장치 경로를 보존했다. 실제 비밀번호나 인증 비밀은 기록하지 않았다. 공개 전에 개인·기관 식별 가능 정보의 공개 범위를 검토한다.
+> **환경 참고:** IP 주소·계정명·장치 경로는 당시 실습 환경의 값이며 다른 환경에서 그대로 적용되는 값은 아니다. 실제 비밀번호나 인증 비밀은 기재하지 않았다.
 
 ## 핵심 결과 요약
 
@@ -19,13 +18,13 @@
 | 시스템 | Linux `6.18.33-v8`, AArch64 커널, ext4 RootFS | §7 |
 | 네트워크 | Ethernet 1 Gbps, DHCP IPv4, 외부 IP ping 4/4 | §8 |
 | 설정 변경·재빌드 | root 로그인용 개발 Fragment 적용 후 증분 재빌드 | §6 |
-| 모듈 선행 실습 | `hello_drv.ko` ARM64 빌드, HTTP 전송, `insmod`/`rmmod`, `dmesg` | §10 |
+| 외부 커널 모듈 | `hello_drv.ko` ARM64 빌드, HTTP 전송, `insmod`/`rmmod`, `dmesg` | §10 |
 
 **문제 해결의 핵심:** 최초 이미지에서는 로그인 프롬프트까지 부팅됐지만 root 로그인이 되지 않았다. 개발용 로그인 정책을 명시적으로 적용해 이미지를 다시 빌드했고, 이후 실제 장비에서 로그인을 확인했다. 외부 커널 모듈은 이미지를 다시 기록하지 않고도 별도로 빌드·전송·로드할 수 있음을 검증했다.
 
-**범위 구분:** 이 장은 Chapter 5의 실장비 부팅 검증 기록이며, §10은 Chapter 8의 *선행 실습*이다. 커널 모듈을 이미지에 포함하는 패키징·자동 로드나 GPIO/Device Tree 통합을 완료했다는 뜻은 아니다. 앞선 이미지 최초 빌드의 근거는 [Chapter 3](03-arm64-image-build.md)에 정리했다.
+**모듈 검증 범위:** `hello_drv.ko`는 Yocto Recipe로 빌드해 파일로 전송하고 수동 적재했다. 이미지에 자동 포함하거나 GPIO 제어를 구현한 결과는 아니다. 최초 이미지 빌드 로그는 [ARM64 이미지 빌드 기록](03-arm64-image-build.md)을 참조한다.
 
-**기존 문서와의 관계:** GitHub [Chapter 1](01-environment.md)·[Chapter 2](02-bitbake-layer-recipe.md)는 환경 구성과 메타데이터 분석 당시의 상태를 기록한다. 해당 문서의 과거 미진행 표기는 이 장의 후속 실장비 검증 결과와 구분한다. 센터 WSL은 해당 Chapter 1 기록 및 이 장의 경로 증거에 따라 Ubuntu 22.04로 표기한다.
+**검증 환경:** 센터 WSL2 Ubuntu 22.04에서 빌드한 이미지를 Raspberry Pi 4B에서 검증했다. 환경 구성과 메타데이터 분석은 [Chapter 1](01-environment.md)·[Chapter 2](02-bitbake-layer-recipe.md)에 기록했다.
 
 **추가 확인이 필요한 부분:** 실제 부팅 체인에서 U-Boot 사용 여부와 펌웨어→커널 연결은 이 문서의 로그만으로 확정하지 않는다. 부팅 파티션에 관련 파일이 존재하는 사실과 실제 실행 여부는 구별한다.
 
@@ -44,9 +43,9 @@
 7. [실장비 시스템·RootFS 검증](#7-실장비-시스템rootfs-검증)
 8. [Ethernet·DHCP·외부 통신 검증](#8-ethernetdhcp외부-통신-검증)
 9. [root 비밀번호 변경 및 재부팅](#9-root-비밀번호-변경-및-재부팅)
-10. [선행 실습: 외부 커널 모듈 개발](#10-선행-실습-외부-커널-모듈-개발)
+10. [외부 커널 모듈 빌드와 동작 검증](#10-외부-커널-모듈-빌드와-동작-검증)
 11. [문제·원인·해결 기록](#11-문제원인해결-기록)
-12. [결론 및 다음 학습](#12-결론-및-다음-학습)
+12. [검증 결과와 미해결 항목](#12-검증-결과와-미해결-항목)
 
 ---
 
@@ -639,7 +638,7 @@ gdb: not installed
 
 - `core-image-minimal`은 개발 도구를 모두 갖춘 범용 배포판이 아니다.
 - `sudo`가 없어도 현재는 `root` 셸이므로 관리자 명령을 직접 실행할 수 있다. 제품 환경에서 상시 root 사용을 권장한다는 뜻은 아니다.
-- `/etc/os-release`가 빠진 **정확한 원인은 아직 역추적하지 않았다.** Chapter 4에서 이미지 Manifest·Recipe·RootFS를 분석할 과제로 남겼다.
+- `/etc/os-release`가 없는 원인은 아직 확인하지 못했다. 원인 분석에는 Image Manifest·Recipe·RootFS 파일 구성 대조가 필요하다.
 - `findmnt` 대신 `/proc/mounts`로 RootFS 마운트 상태를 확인했다.
 - 타깃에 `gcc`가 없어도 **Host에서 ARM64로 크로스 컴파일**할 수 있다.
 
@@ -782,9 +781,9 @@ Fri Mar  9 12:51:02 UTC 2018
 
 ---
 
-## 10. 선행 실습: 외부 커널 모듈 개발
+## 10. 외부 커널 모듈 빌드와 동작 검증
 
-> Chapter 8 내용의 선행 검증. **UART와 LAN 드라이버가 이미 작동한다는 것**과 **새로운 `.ko` 모듈을 직접 만들어 실행할 수 있다는 것**은 다른 문제다. 아래 실습에서 후자까지 실제로 증명했다.
+기본 UART·Ethernet 드라이버의 동작과 별개로, 작성한 `.ko`를 대상 커널에 맞게 빌드하고 실제 보드에서 로드·제거하는 과정까지 검증했다.
 
 ### 10.1 모듈 빌드 가능 조건 확인
 
@@ -871,6 +870,8 @@ poky-wrynose/layers/meta-yocto-lab/
             └── Makefile
 ```
 
+저장소에 분리해 둔 코드는 [hello-drv 예제](../examples/hello-drv/README.md)에서 확인할 수 있다. 아래에는 실습 당시 사용한 소스 내용을 함께 보존한다.
+
 **`files/hello_drv.c` 전체 내용:**
 
 ```c
@@ -943,7 +944,7 @@ find tmp/work -type f -name 'hello_drv.ko'
 tmp/work/raspberrypi4_64-poky-linux/hello-drv/1.0/sources/hello_drv.ko
 ```
 
-`bitbake hello-drv`의 전체 Task 로그는 이 대화에 첨부되지 않았지만, 이후 `.ko`의 존재 및 실장비 삽입 성공을 확인했다.
+`bitbake hello-drv`의 전체 Task 로그는 이 문서에 포함되지 않았지만, 생성된 `.ko` 파일의 형식과 실장비 삽입·제거 결과를 별도로 확인했다.
 
 **모듈 파일 확인** (동일 WSL 빌드 경로):
 
@@ -1087,7 +1088,7 @@ hello_drv 12288 0 - Live 0xffffffe55a0fc000 (O)
 | `root` 로그인이 거부됨 | 최초 이미지의 개발용 root 로그인 허용 정책 미적용 | `root-login-with-empty-password` Fragment 활성화 → 이미지 증분 재빌드·재기록 |
 | SD에 설정한 UART 옵션이 재기록 후 사라짐 | 이미지 재기록은 Boot 파티션까지 덮어씀 | `config.txt`, `cmdline.txt`에 UART 설정 재적용 |
 | `findmnt`, `gcc`, `sudo`, `sshd` 없음 | `core-image-minimal`의 실제 패키지 구성에 해당 명령이 없음 | `/proc/mounts` 대체, Host 크로스 컴파일, SSH 추가는 별도 과제 |
-| `/etc/os-release` 없음 | 파일이 없는 것까지만 확인됨 | Chapter 4에서 패키지 및 파일 출처 역추적 |
+| `/etc/os-release` 없음 | 파일이 없는 것까지만 확인됨 | Image Manifest와 패키지·파일 출처 대조 필요 |
 | `date -u`가 2018년 | 정상 시각 동기화 전으로 보임 | NTP/시각 유지 방법 점검 필요 |
 | `ip: SIOCGIFFLAGS: No such device` | 부팅 중 출력. `eth0`·DHCP는 정상 확인 | 잘못된 인터페이스 참조 가능성 조사 필요 |
 | `No route to host` (wget) | 당시 Pi와 Host의 IP 통신 실패 | LAN 연결 → `LOWER_UP`, ping 3/3 확인 → 재다운로드 성공 |
@@ -1118,11 +1119,11 @@ Target에서 `passwd root`를 실행하면 현재 SD 카드의 파일이 바뀐�
 | 이미지에 앱·SSH·패키지를 재현 가능하게 포함 | BitBake로 이미지 재빌드 후 새 이미지/패키지를 타깃에 적용 |
 | 커널·DTB를 변경 | 빌드 후 커널·DTB 또는 전체 이미지를 타깃에 재배포해야 함 |
 
-수업용 이미지 복구가 필요할지는 **강의가 사용하는 커널 버전·모듈 코드·Toolchain·기본 패키지**에 달려 있다. 이번 Hello Module 성공으로 **현재 Yocto 이미지에서도 별도 모듈 개발·로드가 가능하다**는 점은 검증했지만, 센세가 제공하는 모든 실습과 1:1 호환된다는 것을 입증한 것은 아니다.
+다른 커널·Toolchain 환경과의 모듈 호환성은 커널 버전과 빌드 설정을 별도로 대조해야 한다. 이번 실습은 **현재 Yocto 이미지와 커널에 대한 외부 모듈 빌드·적재 성공**을 확인한 결과다.
 
 ---
 
-## 12. 결론 및 다음 학습
+## 12. 검증 결과와 미해결 항목
 
 ### 실습 최종 체크리스트
 
@@ -1139,20 +1140,15 @@ Target에서 `passwd root`를 실행하면 현재 SD 카드의 파일이 바뀐�
 - [x] `CONFIG_MODULES=y`, Kernel Source/Build 디렉터리 확인
 - [x] `hello_drv.ko` ARM64 크로스 컴파일 및 `vermagic` 확인
 - [x] HTTP를 통한 모듈 전송, `insmod`, `dmesg`, `rmmod` 실장비 성공
-- [ ] LCD DSI 화면 출력 문제 원인 규명 (선택)
-- [ ] `/etc/os-release` 파일 부재 원인 추적 (Chapter 4)
-- [ ] 시스템 시간 동기화, 부팅 중 `ip` 경고 원인 분석 (후속)
-- [ ] 개발용 root 로그인 허용 정책 제거 및 배포용 계정 보안 설정 (후속)
+### 추가 분석 대상
 
-### 다음 학습 제안
-
-- **Chapter 4 — RootFS 분석:** RootFS 파일 구조, 이미지 manifest, 패키지와 Recipe의 관계, `/etc/os-release` 부재 원인.
-- **Chapter 6~7 — 사용자 Layer와 Recipe:** 사용자 C 앱을 이미지에 재현 가능하게 포함하고, 필요하면 개발 환경용 SSH 추가.
-- **Chapter 8 — 디바이스 드라이버:** Character Device → `file_operations` → `open/read/write/release` → GPIO 및 Device Tree → 커널 모듈 패키징·자동 로딩 정책.
+- DSI LCD 화면 출력 중단 원인
+- `/etc/os-release` 파일 부재와 RootFS 패키지 구성의 관계
+- 타깃 시스템 시간 동기화 및 부팅 시 `ip` 경고 원인
+- 개발용 root 로그인 완화 설정 제거와 배포 환경 보안 설정
 
 ### 참고 자료
 
-- 프로젝트 학습 커리큘럼: `Yocto_Project_Complete_Curriculum.md`
 - Yocto 6.0 문서: <https://docs.yoctoproject.org/6.0/>
 - meta-raspberrypi BSP: <https://git.yoctoproject.org/meta-raspberrypi/>
 - Linux Kbuild 외부 모듈: <https://docs.kernel.org/kbuild/modules.html>
@@ -1163,10 +1159,7 @@ Target에서 `passwd root`를 실행하면 현재 SD 카드의 파일이 바뀐�
 
 ---
 
-## 후속 챕터와의 연결
+## 관련 기술 자료
 
-- **Chapter 3:** [최초 ARM64 이미지 빌드와 산출물 검증](03-arm64-image-build.md). 최초 이미지(타임스탬프 `20261025055346`)와 로그인 정책 수정 후 이미지(`20261025083110`)는 구분한다.
-- **Chapter 4:** Wic 파티션/RootFS 구조 및 패키지 구성 역추적은 별도 분석 대상이다.
-- **Chapter 6–8:** `meta-yocto-lab`의 재현 가능한 레이어 구조, 사용자 C 앱 이미지 포함, 커널 모듈 패키지 설치 및 설정·DT 검증은 후속 과제다.
-
-*이 문서는 당시 수집한 명령·출력의 학습 기록이며, 검증하지 않은 동작을 성공으로 추가하지 않았다.*
+- [ARM64 이미지 빌드와 산출물 검증](03-arm64-image-build.md) — 최초 이미지(`20261025055346`)와 root 로그인 설정 변경 후 이미지(`20261025083110`)를 구분
+- [hello-drv 커널 모듈 소스 및 Recipe](../examples/hello-drv/README.md) — 실습에 사용한 모듈 코드와 빌드 메타데이터

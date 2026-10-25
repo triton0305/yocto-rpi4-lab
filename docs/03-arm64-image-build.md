@@ -19,14 +19,14 @@
 
 ## 1. 환경과 경로
 
-이 문서의 명령과 출력은 **센터 WSL**에서 기록했다. 집 WSL(`triton`)의 경로와 병렬도는 혼용하지 않는다. 기존 GitHub [Chapter 1](01-environment.md) 및 [Chapter 2](02-bitbake-layer-recipe.md)는 이전 단계의 기록이므로, 당시 이미지 빌드 미완료 표기와 이 장의 후속 빌드 성공은 모순이 아니다.
+이 장의 명령과 출력은 **센터 WSL** 환경의 이미지 빌드 결과다. 집에서 수행한 Recipe Parse 및 메타데이터 분석과는 실행 환경·검증 범위가 다르다.
 
 | 항목 | 기록값 |
 |---|---|
-| Host | 센터 Windows + WSL2 Ubuntu **22.04** (GitHub Chapter 1 및 Chapter 5의 센터 환경 기록 기준). Chapter 3 초안의 26.04 표기는 집 환경과 혼동된 것으로 판단되며, Chapter 3 실습 당시 OS 버전을 별도 명령으로 재조회한 기록은 없다. |
+| Host | 센터 Windows + WSL2 Ubuntu **22.04** (환경 구성·부팅 기록 기준) |
 | Host 사용자 | `kccistc` |
 | Yocto / DISTRO | Poky 6.0.4 `wrynose` / `poky` |
-| BitBake | 2.18.0 (이전 챕터 인수인계) |
+| BitBake | 2.18.0 (기록된 실습 환경) |
 | Target | Raspberry Pi 4B, ARM64 |
 | MACHINE | `raspberrypi4-64` |
 | 병렬도 | `BB_NUMBER_THREADS="4"`, `PARALLEL_MAKE="-j 4"` (센터 직접 확인) |
@@ -38,7 +38,7 @@ SOURCE_REPO=/home/kccistc/study/rootfs/yocto/yocto-rpi4-lab
 BUILD_LOG=/home/kccistc/study/rootfs/yocto/bitbake-builds/poky-wrynose/build/chapter-03-build.log
 ```
 
-> **증거 구분:** 아래 로그는 당시 ChatGPT 학습 대화에 제공된 실제 출력의 핵심 부분이다. 전체 `ls -lh` 269줄 출력과 원본 빌드 로그 전체를 이 문서에 재수록한 것은 아니다. 명령 입력 화면이 남지 않은 경우는 실제 입력 명령을 추정해 확정하지 않는다.
+> **기록 범위:** 실행 출력의 주요 부분을 발췌했다. 전체 빌드 로그와 배포 디렉터리 목록 전문은 포함하지 않는다. 입력 명령의 원문이 없는 경우는 기록된 실행 여부와 재현용 예시 명령을 구분한다.
 
 ## 2. 빌드 전 Host 자원 확인
 
@@ -117,11 +117,11 @@ WKS_FILE="sdimage-raspberrypi.wks"
 | `IMAGE_FSTYPES` | 요청한 RootFS/디스크 이미지 형식 |
 | `WKS_FILE` | Wic 파티션 배치 명세의 파일 이름 |
 
-Chapter 2에서는 집 환경에서 `core-image-minimal.bb`, `packagegroup-core-boot.bb`, `rpi-base.inc`의 역할을 분석했다. **그 파일을 센터에서 다시 읽은 것으로 기록하지 않는다.** 센터의 최종 설정은 위 `bitbake -e` 출력으로 확인했다.
+집 환경에서 분석한 Recipe의 역할은 [Chapter 2](02-bitbake-layer-recipe.md)에 정리했다. 센터에서 적용된 최종 설정값은 이 장의 `bitbake -e` 출력으로 확인했다.
 
 ## 4. 최초 이미지 빌드
 
-**빌드 기준 CWD:** `BUILD_DIR`. 다음은 당시 제안된 출력 보존 방식이다. **사용자가 실제 입력한 명령 문자열 전체가 별도 캡처된 것은 아니다.**
+**빌드 기준 CWD:** `BUILD_DIR`. 다음은 출력 보존 방법을 보여주는 명령 예시이며, 당시 입력한 전체 명령 원문을 그대로 재현한 것은 아니다.
 
 ```bash
 cd ~/study/rootfs/yocto/bitbake-builds/poky-wrynose/build
@@ -189,7 +189,7 @@ grep -n 'linux-raspberrypi.*task do_fetch:' chapter-03-build.log
 ls -lh tmp/deploy/images/raspberrypi4-64/
 ```
 
-당시 출력은 `total 99M`으로 시작했고, 269줄 규모의 전체 목록은 별도 첨부 `붙여넣은 텍스트(1).txt`로 보존했다. 아래는 원문에 확인된 주요 파일만 추린 것이다.
+배포 디렉터리의 `ls -lh` 출력은 `total 99M`으로 시작했다. 아래 표에는 해당 출력에서 확인한 주요 산출물을 발췌했다.
 
 | 산출물 | 관찰 크기 | 역할 |
 |---|---:|---|
@@ -253,23 +253,20 @@ Wic compressed image: OK
 | 커널·DTB·RootFS·Wic 산출물 | 확인 | §6–7 |
 | Wic 압축 무결성 | 확인 | §8 |
 | 압축 해제 Wic 파티션 구성 | 당시 미검증 | Chapter 5 §3에서 수행 |
-| RootFS 패키지/Recipe 역추적 | 미검증 | Chapter 4 과제 |
+| RootFS 패키지/Recipe 역추적 | 이 실습에서 미수행 | 별도 Manifest 분석 필요 |
 | 실제 Pi 부팅 | 당시 미실행 | Chapter 5에서 성공 |
 | 빌드 중 자원 Peak·정확한 소요 시간 | 미측정 | 기록 없음 |
 | 최초 Fetch 실패 원인·실제 Mirror | 미확인 | 필요 시 별도 분석 |
 | 이미지 SHA-256 | 당시 미계산 | 기록 없음 |
 
-### Chapter 5와의 정확한 연결
+### 실제 부팅 검증과의 연결
 
 Chapter 3에서 생성한 최초 이미지의 타임스탬프는 **`20261025055346`**이다. Chapter 5에서는 최초 이미지로 로그인 프롬프트까지 확인한 후, 개발용 root 로그인 Fragment를 활성화하여 **`20261025083110`** 이미지로 다시 빌드하고 실제 로그인·네트워크·RootFS를 검증했다. 따라서 *Chapter 3의 최초 산출물이 설정 변경 없이 그대로 최종 로그인 검증에 사용됐다*고 표현하지 않는다.
 
 Chapter 3의 `.ext3` 파일은 **별도 RootFS 산출물**이고, Chapter 5의 ext4는 **SD에 기록한 Wic 이미지로 부팅한 뒤 관찰한 루트 마운트**다. 서로 다른 검증 대상이므로 파일 확장자만으로 Wic 내부 루트 파티션의 파일시스템 형식을 단정하지 않는다.
 
-## 10. 학습 결과 및 다음 단계
+## 10. 정리
 
-이번 장에서는 Yocto 이미지 빌드가 단순 C 컴파일을 넘어 Recipe의 Fetch·Compile·Packaging·RootFS·이미지 조립 Task를 연결한다는 점을 실제 결과로 확인했다. Host용 Native Tool과 ARM64 Target용 Cross Toolchain을 구별했고, 산출물 파일의 존재와 실제 장비에서의 동작을 별개 증거로 관리했다.
+BitBake의 Fetch·Compile·Packaging·RootFS·이미지 조립을 거쳐 ARM64 산출물이 생성됨을 확인했다. 부팅·로그인·통신·커널 모듈의 실장비 검증은 [Raspberry Pi 4B 부팅 기록](05-raspberrypi-boot.md)에 별도로 정리했다.
 
-- **Chapter 4:** RootFS의 파일·설치 패키지를 `.manifest` 및 Recipe와 연결해 분석.
-- **Chapter 5:** [Raspberry Pi 4B UART 부팅, 로그인 문제 해결, 네트워크·커널 모듈 선행 검증](05-raspberrypi-boot.md).
-
-> **기록 범위:** 이 문서는 실제 제공된 명령·출력과 그 기술적 해석을 구분한다. 측정하지 않은 시간·자원 사용량이나 확인되지 않은 Mirror URL은 추가하지 않았다.
+기록된 결과에는 빌드 Peak 자원 사용량, 정확한 빌드 소요 시간, 최초 Fetch 실패 원인과 실제 Mirror URL, 이미지 SHA-256 계산값이 포함되지 않는다.

@@ -2,9 +2,9 @@
 
 ## 1. 목표와 검증 범위
 
-WSL2 Ubuntu(x86-64)에서 Yocto Project 6.0.4(wrynose) 환경을 구성하고 Raspberry Pi 4B(ARM64)용 이미지 빌드를 준비한다. **센터의 기존 환경 구성 기록**과 **집의 후속 Parse 검증 기록**을 구분한다.
+WSL2 Ubuntu(x86-64)에서 Yocto Project 6.0.4(wrynose)의 빌드 환경을 구성하고 Raspberry Pi 4B(ARM64)용 BSP·Machine 설정을 확인했다. 센터의 환경 구성과 집의 Recipe Parse 검증 결과를 구분하여 기록한다.
 
-이 문서의 **검증 완료** 표기는 기존 실습 기록에 근거합니다. 센터에서 확보된 초기화 오류 원문과 확인 결과는 [센터 실행 근거](logs/01-center-setup.md)에, 집에서 제공된 터미널 출력은 [집 실행 로그](logs/01-home-setup.md)에 분리했습니다. 이 Chapter 1 실습 당시에는 이미지 생성과 Raspberry Pi 실부팅을 수행하지 않았습니다. **이후 센터 환경에서 [Chapter 3](03-arm64-image-build.md)의 이미지 빌드와 [Chapter 5](05-raspberrypi-boot.md)의 실장비 부팅 검증을 완료했습니다.** 별도 표시한 **재현·점검 명령**은 이번 문서 정비에서 WSL에서 다시 실행한 결과가 아닙니다.
+센터 환경 구성의 원문·결과는 [센터 실행 로그](logs/01-center-setup.md), 집의 실측 결과는 [집 실행 로그](logs/01-home-setup.md)를 참조한다. 이미지 빌드와 실장비 부팅의 후속 검증은 [ARM64 이미지 빌드](03-arm64-image-build.md) 및 [Raspberry Pi 부팅](05-raspberrypi-boot.md)에 별도로 기록했다. 실행 기록이 없는 보완 명령은 확인용 명령으로 구분한다.
 
 ## 2. 작업 디렉터리
 
@@ -54,7 +54,7 @@ source bitbake-builds/poky-wrynose/build/init-build-env
 
 이 스크립트는 현재 Shell에 빌드 환경을 적용하고 Build Directory로 이동하도록 준비합니다. 이후의 `../layers`는 **Build Directory 기준 상대 경로**입니다.
 
-**기록 구분:** [센터 초기화 오류 원문](logs/01-center-setup.md#1-bitbake-초기화-중-locale-오류--원문-발췌)에서는 `bitbake-setup init`의 내부 `init-build-env` 호출을 확인했지만 센터의 별도 수동 `source` 로그는 없습니다. **집에서는 `source` 실행 뒤 `pwd`와 `command -v bitbake`를 확인한 원문 출력이 있습니다**([집 실행 로그](logs/01-home-setup.md#7-build-environment-진입-및-초기-layer--실행-로그)). 이번 문서 수정 과정에서 WSL을 직접 재실행하지는 않았습니다.
+**기록 구분:** [센터 초기화 오류 원문](logs/01-center-setup.md#1-bitbake-초기화-중-locale-오류--원문-발췌)에서는 `bitbake-setup init`의 내부 `init-build-env` 호출을 확인했지만 센터의 별도 수동 `source` 로그는 없습니다. **집에서는 `source` 실행 뒤 `pwd`와 `command -v bitbake`를 확인한 원문 출력이 있습니다**([집 실행 로그](logs/01-home-setup.md#7-build-environment-진입-및-초기-layer--실행-로그)). 센터에서 이 명령을 별도로 수동 실행한 원문 출력은 확보되지 않았습니다.
 
 ## 4. Locale 오류 해결 (수행·검증 기록)
 
@@ -134,7 +134,7 @@ PARALLEL_MAKE = "-j 4"
 | Raspberry Pi BSP 등록 | 완료 | `show-layers` 및 Priority 9 확인 기록 |
 | Machine 및 Distribution 설정 | 완료 | `bitbake -e` 값 확인 기록 |
 | 병렬도 제한 | 완료 | `bitbake -e` 확인 기록 |
-| `init-build-env` 명령 재실행 | 이번 정비에서 미검증 | 공식 절차 보강 |
+| 센터의 별도 수동 `source init-build-env` | 실행 원문 미확보 | 집의 실행 기록 및 공식 절차와 구분 |
 | `core-image-minimal` 이미지 빌드 | Chapter 1 당시 미진행 | 이후 [Chapter 3](03-arm64-image-build.md)에서 성공 |
 | Raspberry Pi 4B 부팅 | Chapter 1 당시 미진행 | 이후 [Chapter 5](05-raspberrypi-boot.md)에서 성공 |
 
@@ -142,7 +142,7 @@ PARALLEL_MAKE = "-j 4"
 
 ## 9. 집 환경 구성 및 Recipe Parse 검증
 
-이 절은 2026-10-22~23 집 WSL2에서 수행한 환경 구성과 Parse 검증의 **요약**입니다. 전체 명령어·출력 및 중복 Setup 정리 과정은 [집 Chapter 1 실행 로그](logs/01-home-setup.md)를 참조합니다. 수치는 사용자가 제공한 터미널 기록에 근거하며, GitHub 문서 수정 중 명령을 직접 재실행하지 않았습니다.
+이 절은 2026-10-22~23 집 WSL2에서 확인한 환경 구성과 Recipe Parse 결과의 요약이다. 실제 명령어·출력 및 중복 Setup 정리 기록은 [집 실행 로그](logs/01-home-setup.md)에 보존했다.
 
 | 항목 | 집에서 확인한 결과 |
 |---|---|
@@ -155,9 +155,9 @@ PARALLEL_MAKE = "-j 4"
 | 실행용 BitBake | `layers/bitbake/bin/bitbake` |
 | BitBake Recipe Parse | 992 `.bb`, 2013 targets, 73 skipped, 0 masked, 0 errors, Exit 0 |
 | WSL2 경고 | VHDX 저장 공간 최적화 권고 1건 |
-| 이미지 빌드 / Raspberry Pi 부팅 | **미진행 / 미진행** |
+| 이 환경에서 확인한 범위 | 빌드 환경 구성 및 Recipe Parse |
 
-집에서 실제 실행했다고 제공된 명령:
+집에서 실행한 명령:
 
 ```bash
 bitbake -p
@@ -173,15 +173,17 @@ Summary: There was 1 WARNING message.
 
 종료 코드 `0`을 확인했습니다. `-p`는 Recipe 메타데이터의 Parse Only 동작으로, **컴파일·이미지 생성·실부팅 성공을 의미하지 않습니다.** WSL2 관련 경고는 파싱 오류와 구분하고, 전체 빌드 전에 Host 저장 공간을 확인합니다.
 
-집·센터의 설정 차이는 [빌드 설정](../configs/build-config.md), 각 Source의 Git SHA는 [소스 리비전](../configs/source-revisions.md)을 참조합니다. Chapter 2 첫 조회 예정 명령은 `bitbake-layers show-recipes busybox`이며 여기서는 수행 완료로 처리하지 않습니다.
+센터·집의 설정 차이는 [빌드 설정](../configs/build-config.md), Source SHA는 [소스 리비전](../configs/source-revisions.md)에서 확인할 수 있다.
 
-## 다음 학습 — Chapter 2
+## 관련 기술 문서
 
-환경 구성을 마친 뒤 Layer·Recipe·Provider·Task를 실제 설정 파일과 BitBake 조회 결과로 분석했습니다. 후속 실습 기록은 [Chapter 2 — BitBake · Layer · Recipe](02-bitbake-layer-recipe.md)를 참조합니다. 해당 챕터의 작업 범위는 **조회·메타데이터 분석**이며, 그 시점에는 이미지 빌드와 실장비 부팅을 수행하지 않았습니다. 후속 결과는 [Chapter 3](03-arm64-image-build.md)과 [Chapter 5](05-raspberrypi-boot.md)에 기록했습니다.
+- [BitBake·Layer·Recipe 메타데이터 분석](02-bitbake-layer-recipe.md)
+- [ARM64 이미지 빌드 결과](03-arm64-image-build.md)
+- [Raspberry Pi 4B UART 부팅 및 통신 검증](05-raspberrypi-boot.md)
 
 ## 참고 문서
 
 - [Yocto Project 6.0 — Setting Up to Use the Yocto Project](https://docs.yoctoproject.org/6.0/dev-manual/start.html)
 - [Yocto Project 6.0 — Quick Build](https://docs.yoctoproject.org/6.0/brief-yoctoprojectqs/index.html)
 - [Yocto Project 6.0 — Configuration Fragments](https://docs.yoctoproject.org/6.0/ref-manual/fragments.html)
-- [BitBake 2.16 — Command options, `-p` / `--parse-only`](https://docs.yoctoproject.org/bitbake/2.16/bitbake-user-manual/bitbake-user-manual-intro.html)
+- [BitBake 2.18 — Command options, `-p` / `--parse-only`](https://docs.yoctoproject.org/bitbake/2.18/bitbake-user-manual/bitbake-user-manual-intro.html)

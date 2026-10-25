@@ -2,21 +2,27 @@
 
 > **관련 문서:** [Chapter 1 환경 구성](01-environment.md) · [Chapter 1 집 실행 로그](logs/01-home-setup.md) · [빌드 설정](../configs/build-config.md) · [Source SHA](../configs/source-revisions.md)
 
-> **문서 간 설정 정합성:** 제공된 Chapter 2 초안에는 Chapter 1 인수인계 병렬도가 `4 / -j 4`로 적혀 있으나, 집 WSL2의 실제 Chapter 1 `bitbake -e` 기록은 `2 / -j 2`입니다. 따라서 이 문서는 **검증된 집 설정값으로 두 표기를 정정**하며, Chapter 2에서 해당 변수를 별도로 재조회하지 않았다는 사실을 유지합니다. 실제 이미지 빌드를 시작하기 전에 재확인해야 합니다.
+> **환경:** 이 장은 집 WSL2에서 확인한 메타데이터 분석을 기록한다. 병렬도 `2 / -j 2`는 [집 환경 구성 로그](logs/01-home-setup.md)의 `bitbake -e` 결과이며, 이 장에서 별도로 재조회한 값은 아니다.
 
 **주제:** BitBake · Layer · Recipe · Provider · Task · Image · Configuration Fragment  
-**실습 기간:** 2026-10-24 ~ 2026-10-25 (대화 및 사용자 제공 로그 기준)  
+**실습 기간:** 2026-10-24 ~ 2026-10-25  
 **대상 장비:** Raspberry Pi 4 Model B, ARM64 (AArch64)  
-**결과:** Chapter 2의 핵심 실습 완료. **이 장의 실습 시점에는 `core-image-minimal` 전체 빌드와 실장비 부팅을 수행하지 않았으며, 이후 센터 환경에서 [Chapter 3 이미지 빌드](03-arm64-image-build.md) 및 [Chapter 5 실장비 검증](05-raspberrypi-boot.md)을 완료함.**
+**결과:** Recipe Parse, Layer·Provider·Task 의존성 및 Image 설정 분석을 완료했다. 실제 이미지 빌드와 실장비 검증은 [ARM64 이미지 빌드](03-arm64-image-build.md) 및 [Raspberry Pi 부팅](05-raspberrypi-boot.md)에 기록했다.
 
-> **기록 원칙**
-> - **[실행 검증]** 이 대화에서 사용자가 명령 및 터미널 출력을 실제로 제공한 사항.
-> - **[파일 확인]** 사용자가 `cat`, `sed`, `ls`로 원본 파일을 직접 확인한 사항.
-> - **[학습 설명]** 확인한 자료를 해석하기 위해 설명한 개념. 실제 빌드 결과와 구별함.
-> - **[미검증]** 파일/변수는 확인했어도 최종 산출물이나 실장비 동작까지는 확인하지 않은 사항.
-> - 긴 원본 출력은 주요 줄을 발췌했다. 발췌한 출력은 **실행 위치 + 명령**과 함께 기록했으며, 임의로 새 로그를 꾸며 넣지 않았다.
+> **증거 구분:** `실행 검증`은 명령의 출력, `파일 확인`은 원본 설정·Recipe 조회, `해석`은 해당 출력으로부터 도출한 기술적 설명을 뜻한다. 출력이 없는 항목은 관찰 사실로 취급하지 않는다. 긴 로그는 실행 위치·명령과 함께 핵심 부분을 발췌했다.
 
 ---
+
+## 목차
+
+- [환경·경로 기준](#0-환경과-경로-기준)
+- [BitBake Parse 검증](#2-bitbake-파싱-및-실행-경로-검증)
+- [Layer·Recipe 구조](#3-layer-구조와-recipe-탐색)
+- [Provider 선택과 의존성](#5-provider와-최종-머신-기능-검증)
+- [BusyBox Task 그래프](#7-busybox-task-목록과-실제-의존성-그래프)
+- [Image Task와 설정](#8-image-생성-task-및-최종-이미지-설정)
+- [Configuration Fragment](#9-yocto-60-configuration-fragment)
+- [명령·출력 색인](#11-실습-명령-및-출력-추적-색인)
 
 ## 0. 환경과 경로 기준
 
@@ -158,7 +164,7 @@ Parsing of 992 .bb files complete (0 cached, 992 parsed). 2013 targets, 73 skipp
 
 - **학습한 원인 후보:** 새 셸에서는 BitBake 경로가 `PATH`에 없을 수 있다.
 - **안내한 활성화 명령:** `source ./init-build-env` (실행 위치: `BUILD_DIR`)
-- **검증 범위:** 사용자가 `source` 명령의 출력 자체를 제공한 것은 아니다. 따라서 실제로 그 명령으로 문제를 해결했다고 단정하지 않고, **다음 실행에서 BitBake가 정상 인식되었음**만 기록한다.
+- **확인 범위:** `source` 실행 자체의 출력은 확보되지 않았다. **다음 조회에서 BitBake가 정상 인식된 사실**을 확인했으며, 원인을 확정하지 않는다.
 - **`source`의 의미:** 별도 자식 셸이 아니라 현재 Bash 셸에 환경변수 변경을 적용한다.
 
 ---
@@ -442,7 +448,7 @@ overlays/vc4-kms-v3d.dtbo
 - `mcp2515-can0.dtbo` 등은 CAN(Controller Area Network / 차량·산업 장치 통신망) 관련 하드웨어와 연결되는 학습 포인트다.
 - `WKS_FILE`은 디스크 파티션 배치를 기술한 **Wic Kickstart 설정 파일** 이름을 지정한다.
 
-> **출처 구분:** 대화 중 `rpi-base.inc`의 **101번째 줄 이후에 있다고 소개된** `MACHINE_FEATURES_DEFAULTS:append` / `DISABLE_VC4GRAPHICS` 관련 코드는 위 `sed -n '1,100p'` 원본 출력에 들어 있지 않았다. 해당 설명은 대화 중 제시된 추가 참고 내용이므로, 이 문서는 이를 **원본 100줄에서 직접 확인한 사실로 취급하지 않는다.** 최종 `MACHINE_FEATURES` 및 EGL Provider 값은 아래 별도 실측으로 검증했다.
+> **확인 범위:** `sed -n '1,100p'`는 `rpi-base.inc`의 처음 100줄만 표시한다. 그 이후에 있을 수 있는 `MACHINE_FEATURES_DEFAULTS:append` / `DISABLE_VC4GRAPHICS` 관련 구문은 이 명령으로 확인되지 않았다. 최종 `MACHINE_FEATURES` 및 EGL Provider 값은 아래 `bitbake -e` 조회 결과로 검증했다.
 
 ---
 
@@ -906,7 +912,7 @@ WKS_FILE="sdimage-raspberrypi.wks"
 
 - 원본 `core-image-minimal.bb`의 `${CORE_IMAGE_EXTRA_INSTALL}`이 최종 `IMAGE_INSTALL` 출력에서 빈 문자열로 확장된 것을 확인했다.
 - 원본 `rpi-base.inc`의 `IMAGE_FSTYPES`, `WKS_FILE` 기본값도 최종 출력과 일치했다.
-- **실제 파일 생성 여부는 미검증**이다. 아직 빌드하지 않았다.
+- 이 단계는 Image Task 및 설정 조회이며, **이미지 생성 Task를 실행한 결과는 아니다.** 이미지 빌드 결과는 [별도 기록](03-arm64-image-build.md)에 정리했다.
 
 ### 8.3 발생한 Bash 오류와 원인
 
@@ -972,11 +978,11 @@ OE_FRAGMENTS += "distro/poky machine/raspberrypi4-64"
 
 ### 9.3 설정 파일 역할 비교
 
-| 파일 경로 | 역할 | 본 대화에서 내용 검증? |
+| 파일 경로 | 역할 | 이 실습에서 원본 내용 확인? |
 |---|---|---|
 | `BUILD_DIR/conf/bblayers.conf` | 활성 Layer 경로 | **예** (`cat`) |
 | `BUILD_DIR/conf/toolcfg.conf` | 활성 Configuration Fragment | **예** (`cat`) |
-| `BUILD_DIR/conf/local.conf` | 사용자별 빌드 환경·병렬도 등 | **아니오** (Chapter 1 인수인계 값만 사용) |
+| `BUILD_DIR/conf/local.conf` | 사용자별 빌드 환경·병렬도 등 | **아니오** (환경 구성 기록의 값 참조) |
 | `LAYERS_DIR/meta-yocto/meta-poky/conf/distro/poky.conf` | 배포판 정책 | **예** (`cat`) |
 | `LAYERS_DIR/meta-raspberrypi/conf/machine/raspberrypi4-64.conf` | 대상 머신 설정 | **예** (`cat`) |
 
@@ -1041,9 +1047,9 @@ OE_FRAGMENTS += "distro/poky machine/raspberrypi4-64"
 
 ---
 
-## 12. 완료·미완료 및 다음 챕터 인수인계
+## 12. 실습 결과 및 검증 범위
 
-### 12.1 이 대화에서 실제로 완료한 학습
+### 12.1 확인한 작업
 
 - [x] BitBake 파싱과 실제 빌드의 차이 검증 (`992 .bb`, 오류 0)
 - [x] Layer 4개 확인과 `bblayers.conf` ↔ `layer.conf` 연결
@@ -1062,48 +1068,16 @@ OE_FRAGMENTS += "distro/poky machine/raspberrypi4-64"
 
 ### 12.2 실습 중 파일 변경 여부
 
-- **사용자가 의도적으로 편집했다고 확인한 Yocto 설정 파일:** 없음.
+- **이 과정에서 의도적으로 수정한 Yocto 설정 파일:** 없음.
 - **BitBake 실행에 따라 생성·변경될 수 있는 파일:** Recipe 파싱 캐시, BitBake 서버 로그, `pn-buildlist`, `task-depends.dot`, 보조 툴 다운로드 자료.
 - **새로 생성된 것으로 출력으로 확인된 파일:** `BUILD_DIR/pn-buildlist`, `BUILD_DIR/task-depends.dot`.
-- **전체 Linux 이미지:** 아직 생성 성공 로그 없음.
+- **전체 Linux 이미지:** 이 조회 중심 실습에서는 생성하지 않았다. 실제 빌드 검증은 [별도 기록](03-arm64-image-build.md)에 있다.
 
-### 12.3 아직 검증되지 않은 사항
+### 12.3 분석 범위와 실장비 검증의 연결
 
-1. **첫 이미지 빌드** — `bitbake core-image-minimal` 실행 결과, 성공/실패 로그.
-2. **최종 산출물** — `tmp/deploy/images/raspberrypi4-64/`의 실제 `Image`, DTB, RootFS, `.wic*` 존재 여부.
-3. **실제 RootFS 구성** — 설치 완료 패키지와 Wi-Fi 연결 도구의 존재 여부.
-4. **Raspberry Pi 실장비 부팅** — 시리얼 콘솔, Kernel/RootFS 마운트, 로그인 여부.
-5. **특정 Provider의 직접 대응** — 예: `virtual/update-alternatives`와 그래프의 `opkg-utils` 관계는 별도 조회 필요.
-6. **심화 실습 범위** — 직접 작성한 일반 C Recipe의 `SRC_URI`, `S`, `do_compile`, `do_install` 동작 및 실제 `.bbappend` 적용은 다음 실습들에서 다룰 수 있다.
-7. **`local.conf` 실제 전문** — 이 대화에서는 파일을 직접 출력하지 않았다.
+이 장에서 확보한 근거는 **집 환경의 Parse·메타데이터 조회 결과**이다. `local.conf` 전문, `rpi-base.inc` 101줄 이후, 설치된 RootFS 패키지 목록과 일부 Provider 대응은 이 조회 과정에서 확인되지 않았다.
 
-### 12.4 Chapter 3 인수인계
-
-**다음 챕터 이름:** `Yocto 03 — First Image Build`
-
-**목표:** Raspberry Pi 4 Model B용 최소 부팅 Linux 이미지 `core-image-minimal`을 실제로 빌드하고, 성공 로그와 산출물 파일 목록을 확인한다.
-
-**빌드 환경:**
-
-```text
-Host: WSL2 Ubuntu, x86_64
-Target: raspberrypi4-64, aarch64
-Yocto: 6.0.4 wrynose
-DISTRO: poky
-BUILD_DIR: /home/triton/study/rootfs/yocto/bitbake-builds/poky-wrynose/build
-Chapter 1 집 검증값: BB_NUMBER_THREADS=2, PARALLEL_MAKE=-j 2 (Chapter 2 중 미재확인, 빌드 전 재점검)
-```
-
-**다음에 진행할 순서:**
-
-1. 실제 WSL RAM·Swap, 호스트 디스크의 가용 공간 재확인.
-2. `local.conf`와 다운로드·캐시·출력 경로 등의 빌드 설정 점검.
-3. 리소스와 설정이 적절한지 확인한 뒤 `bitbake core-image-minimal` 실행.
-4. Task 실행 및 오류 로그 분석.
-5. 빌드 성공 시 `tmp/deploy/images/raspberrypi4-64/`의 실제 파일 이름·형식·크기 기록.
-6. Raspberry Pi 실장비 SD 카드 기록과 부팅 검증은 별도 챕터에서 수행.
-
-**학습 원칙:** 개념 → 내부 동작 → 실행 전 예측 → 직접 실습 → 결과 검증. 기존 ARM64 Assembly·Kernel·Kbuild·U-Boot 지식과 연결하며, 실장비 환경을 임의로 변경하지 않는다. 약어가 처음 나오면 **영어 원어, 한국어 뜻, 실제 역할**을 함께 적는다.
+이후 센터 환경의 실제 이미지 빌드 결과는 [Chapter 3](03-arm64-image-build.md), Raspberry Pi 4B에서의 커널·RootFS·네트워크·외부 모듈 동작은 [Chapter 5](05-raspberrypi-boot.md)에 기록했다.
 
 ---
 
@@ -1129,17 +1103,3 @@ Chapter 1 집 검증값: BB_NUMBER_THREADS=2, PARALLEL_MAKE=-j 2 (Chapter 2 중 
 | Wic | Yocto 디스크 이미지 생성 도구 이름 | `.wic` 디스크 이미지 제작 |
 | UART | Universal Asynchronous Receiver/Transmitter / 범용 비동기 송수신기 | 시리얼 통신·로그 확인 |
 
----
-
-## 부록 A. 참고한 대화 자료의 범위
-
-본 문서는 **이 Yocto Chapter 2 대화에 사용자 본인이 붙여넣은 터미널 명령과 출력**을 주된 근거로 작성했다. Chapter 1 환경·디렉터리·리소스 정보는 사용자가 전달한 인수인계 및 프로젝트 커리큘럼의 기존 기준선을 사용했다.
-
-아래 내용은 **대화만으로 직접 실측되지 않았음**을 명확히 구분한다.
-
-- 변경된 `local.conf` 전체 내용.
-- 실제 `bitbake core-image-minimal` 성공 및 설치 패키지 목록.
-- Wic 이미지의 구체적인 파티션 구성과 최종 부팅 경로.
-- `rpi-base.inc`의 101번째 줄 이후 전체 원문.
-
-> **기록상 최종 상태(Chapter 2 당시):** 조회 중심 실습을 완료했으며, 이미지 빌드는 다음 단계로 계획했다. **후속 수행 결과:** [Chapter 3](03-arm64-image-build.md)에서 이미지 빌드 성공, [Chapter 5](05-raspberrypi-boot.md)에서 Raspberry Pi 4B 부팅 및 커널 모듈 수동 적재 검증 성공.
