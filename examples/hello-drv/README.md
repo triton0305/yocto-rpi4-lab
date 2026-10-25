@@ -1,27 +1,21 @@
 # hello-drv — Raspberry Pi 4B 외부 커널 모듈
 
-Yocto Project 6.0.4 (`wrynose`)의 `inherit module`로 빌드한 ARM64 커널 모듈 예제다. Raspberry Pi 4B에서 파일 전송, `insmod`, `/proc/modules`, `dmesg`, `rmmod`를 검증한 기록은 [Chapter 5](../../docs/05-raspberrypi-boot.md#10-외부-커널-모듈-빌드와-동작-검증)에 있다.
+Yocto Project 6.0.4 (`wrynose`)의 `inherit module`을 이용해 ARM64용 `hello_drv.ko`를 빌드했습니다. Raspberry Pi 4B에서 모듈 전송, `insmod`, `/proc/modules`, `dmesg`, `rmmod`로 동작을 검증했습니다.
 
-## 소스
+검증 명령과 실행 출력은 [Chapter 5 — 외부 커널 모듈 빌드와 동작 검증](../../docs/05-raspberrypi-boot.md#10-외부-커널-모듈-빌드와-동작-검증)에 정리했습니다.
 
-- [`files/hello_drv.c`](files/hello_drv.c): 로드·언로드 메시지를 출력하는 모듈
-- [`files/Makefile`](files/Makefile): Kbuild를 사용하는 외부 모듈 빌드 규칙
-- [`hello-drv_1.0.bb`](hello-drv_1.0.bb): Yocto `module` 클래스가 적용된 Recipe
+## 파일 구성
 
-세 파일은 [실장비 기록](../../docs/05-raspberrypi-boot.md#102-custom-layer-및-소스-구성)의 코드와 동일하다. **이 디렉터리는 완전한 Yocto Layer가 아니라, 사용자 Layer의 `recipes-kernel/hello-drv/`에 배치할 Recipe 예제**다.
+- [`files/hello_drv.c`](files/hello_drv.c) — 모듈 초기화·종료 함수와 커널 로그 출력
+- [`files/Makefile`](files/Makefile) — Kbuild 기반 커널 모듈 빌드 규칙
+- [`hello-drv_1.0.bb`](hello-drv_1.0.bb) — `inherit module`을 사용하는 Yocto Recipe
 
-## 기존 Yocto Build 환경에 배치
+## 빌드
 
-`poky-wrynose/build` 환경에서 사용자 Layer의 `recipes-kernel/` 아래에 디렉터리를 복사한다.
+Yocto Build 환경에서 소스를 사용자 Layer의 `recipes-kernel/hello-drv/` 경로에 배치하고 다음과 같이 빌드합니다.
 
 ```bash
-LAYER=../layers/meta-yocto-lab
-mkdir -p "$LAYER/recipes-kernel"
-cp -r /path/to/yocto-rpi4-lab/examples/hello-drv "$LAYER/recipes-kernel/"
-bitbake-layers add-layer "$LAYER" # 아직 등록되지 않은 경우
 bitbake hello-drv
 ```
 
-`/path/to/...`는 실제 Checkout 위치로 변경해야 한다. 이 명령은 재현을 위한 안내이며, 해당 공개 예제를 별도로 다시 빌드했다고 주장하지 않는다.
-
-실장비에서는 `hello_drv.ko`를 수동 전송·적재했으며 이미지 자동 포함·로드나 GPIO 제어는 실습에 포함하지 않았다.
+생성된 `hello_drv.ko`는 Raspberry Pi 4B에 전송해 `insmod`로 적재하고, `dmesg`와 `rmmod`로 동작 및 제거를 확인했습니다.
