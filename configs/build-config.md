@@ -31,7 +31,7 @@ bitbake-config-build enable-fragment machine/raspberrypi4-64
 
 - `enable-fragment`: Fragment를 활성화하여 해당 설정을 BitBake 환경에 적용합니다.
 - Yocto 6.0에서는 활성화한 Fragment 이름을 `build/conf/toolcfg.conf`의 `OE_FRAGMENTS`에 자동 반영합니다.
-- `DISTRO=poky`는 기존 Setup 초기 선택 기록입니다. `toolcfg.conf`의 현재 전체 내용까지 GitHub에서 직접 확인한 것은 아닙니다.
+- `DISTRO=poky`는 기존 Setup 초기 선택 기록입니다. 이후 [Chapter 2](../docs/02-bitbake-layer-recipe.md#9-yocto-60-configuration-fragment)에서 사용자가 `cat conf/toolcfg.conf` 출력으로 `OE_FRAGMENTS += "distro/poky machine/raspberrypi4-64"`를 확인했습니다. 이번 문서 수정 과정에서 GitHub가 WSL 설정 파일을 직접 조회한 것은 아닙니다.
 
 설정 확인용 명령(이번 문서 정비에서 재실행하지 않음):
 
@@ -90,6 +90,8 @@ bitbake-layers show-layers
 - [ ] Raspberry Pi 4B에서 이미지 부팅 확인
 
 외부 Source Checkout 버전은 [소스 리비전](source-revisions.md) 문서에서 별도로 관리합니다.
+
+추가 메타데이터 분석과 `toolcfg.conf`, `bblayers.conf`, Provider 및 Image 설정의 실제 출력은 [Chapter 2 학습 기록](../docs/02-bitbake-layer-recipe.md)에서 확인할 수 있습니다. Chapter 2는 `local.conf` 전체를 새로 읽은 기록이 없으므로, 이미지 빌드 전 병렬 설정값을 재확인해야 합니다.
 
 ## 참고 문서
 

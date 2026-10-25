@@ -38,7 +38,7 @@ Host별 빌드 자원과 병렬 설정은 다음과 같습니다.
 ## 학습 진행 현황
 
 - [x] Chapter 1 — Yocto 개발 환경 구성
-- [ ] Chapter 2 — BitBake · Layer · Recipe 구조
+- [x] Chapter 2 — BitBake · Layer · Recipe 구조 (메타데이터·Provider·Task 분석)
 - [ ] Chapter 3 — 최소 Linux 이미지 빌드
 - [ ] Chapter 4 — RootFS 및 빌드 산출물 분석
 - [ ] Chapter 5 — Raspberry Pi 4B 부팅 검증
@@ -47,7 +47,7 @@ Host별 빌드 자원과 병렬 설정은 다음과 같습니다.
 - [ ] Chapter 8 — Kernel 및 Device Driver 통합
 - [ ] Chapter 9 — 증분 빌드 · 의존성 · 오류 분석
 
-체크한 항목은 기존 실습 기록을 기준으로 합니다. 로컬 개발 환경에서 `bitbake -p`를 실행해 `.bb` 992개, 2013 targets, 73 skipped, 0 errors, 종료 코드 0을 확인했습니다(사용자 제공 결과). **이는 메타데이터 Parse 검증이며 컴파일·이미지 빌드·실장비 부팅 검증은 아닙니다.**
+체크한 항목은 사용자 제공 실습 기록을 기준으로 합니다. 로컬 개발 환경의 `bitbake -p`에서 `.bb` 992개, 2013 targets, 73 skipped, 0 errors 및 종료 코드 0을 확인했고, Chapter 2에서는 `bblayers.conf`, `layer.conf`, Machine·Distro 설정, Provider 최종값, BusyBox Task 의존성 및 Image 설정을 분석했습니다. **메타데이터 분석·Task 목록 조회·의존성 그래프 생성은 이미지 컴파일·생성·실장비 부팅의 성공을 뜻하지 않습니다.**
 
 ## 저장소 구조
 
@@ -59,6 +59,7 @@ yocto-rpi4-lab/
 │   └── source-revisions.md
 └── docs/
     ├── 01-environment.md
+    ├── 02-bitbake-layer-recipe.md
     └── logs/
         ├── 01-center-setup.md
         └── 01-home-setup.md
@@ -71,6 +72,7 @@ yocto-rpi4-lab/
 | 문서 | 역할 |
 |---|---|
 | [Chapter 1 — 개발 환경 구성](docs/01-environment.md) | 수행한 명령·원리·환경 검증 |
+| [Chapter 2 — BitBake · Layer · Recipe](docs/02-bitbake-layer-recipe.md) | Layer·Provider·Task·Image 설정 분석 및 실습 로그 |
 | [주 빌드 환경 — Chapter 1 실행 근거](docs/logs/01-center-setup.md) | 주 빌드 환경의 오류 원문·검증 결과·미확인 항목 |
 | [로컬 개발 환경 — Chapter 1 실행 로그](docs/logs/01-home-setup.md) | 로컬 개발 환경의 명령·실제 출력·Checkout SHA·Parse 결과 |
 | [빌드 설정](configs/build-config.md) | 설정값·적용 위치·동작 원리·확인 명령 |
@@ -86,4 +88,4 @@ yocto-rpi4-lab/
 
 ## 현재 상태
 
-Chapter 1 개발 환경 구성 및 로컬 개발 환경의 BitBake Parse 검증을 완료했습니다(제공된 실습 결과 기준). 다음 단계는 Chapter 2의 BitBake · Layer · Recipe 분석이며, 이미지 빌드와 실장비 부팅은 아직 수행하지 않았습니다.
+Chapter 1 개발 환경 구성 및 로컬 개발 환경의 BitBake Parse 검증을 완료했습니다(제공된 실습 결과 기준). Chapter 2의 Layer·Recipe·Provider·Task 조회 실습까지 완료했습니다(제공된 실습 기록 기준). 다음 단계는 Chapter 3의 `core-image-minimal` 첫 이미지 빌드이며, 이미지 빌드와 실장비 부팅은 아직 수행하지 않았습니다.

@@ -175,6 +175,10 @@ Summary: There was 1 WARNING message.
 
 집·센터의 설정 차이는 [빌드 설정](../configs/build-config.md), 각 Source의 Git SHA는 [소스 리비전](../configs/source-revisions.md)을 참조합니다. Chapter 2 첫 조회 예정 명령은 `bitbake-layers show-recipes busybox`이며 여기서는 수행 완료로 처리하지 않습니다.
 
+## 다음 학습 — Chapter 2
+
+환경 구성을 마친 뒤 Layer·Recipe·Provider·Task를 실제 설정 파일과 BitBake 조회 결과로 분석했습니다. 후속 실습 기록은 [Chapter 2 — BitBake · Layer · Recipe](02-bitbake-layer-recipe.md)를 참조합니다. 해당 챕터에서 완료한 작업은 **조회·메타데이터 분석이며 이미지 빌드와 실장비 부팅은 아직 미진행**입니다.
+
 ## 참고 문서
 
 - [Yocto Project 6.0 — Setting Up to Use the Yocto Project](https://docs.yoctoproject.org/6.0/dev-manual/start.html)
