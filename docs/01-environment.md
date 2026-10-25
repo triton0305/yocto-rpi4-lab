@@ -4,7 +4,7 @@
 
 WSL2 Ubuntu(x86-64)에서 Yocto Project 6.0.4(wrynose) 환경을 구성하고 Raspberry Pi 4B(ARM64)용 이미지 빌드를 준비한다. **센터의 기존 환경 구성 기록**과 **집 노트북의 후속 Parse 검증 기록**을 구분한다.
 
-이 문서의 **검증 완료** 표기는 기존 실습 기록에 근거합니다. 센터에서 확보된 초기화 오류 원문과 확인 결과는 [센터 실행 근거](logs/01-center-setup.md)에, 집에서 제공된 터미널 출력은 [집 실행 로그](logs/01-home-setup.md)에 분리했습니다. 이미지 생성과 Raspberry Pi 실부팅은 아직 수행하지 않았습니다. 별도 표시한 **재현·점검 명령**은 이번 문서 정비에서 WSL에서 다시 실행한 결과가 아닙니다.
+이 문서의 **검증 완료** 표기는 기존 실습 기록에 근거합니다. 센터에서 확보된 초기화 오류 원문과 확인 결과는 [센터 실행 근거](logs/01-center-setup.md)에, 집에서 제공된 터미널 출력은 [집 실행 로그](logs/01-home-setup.md)에 분리했습니다. 이 Chapter 1 실습 당시에는 이미지 생성과 Raspberry Pi 실부팅을 수행하지 않았습니다. **이후 센터 환경에서 [Chapter 3](03-arm64-image-build.md)의 이미지 빌드와 [Chapter 5](05-raspberrypi-boot.md)의 실장비 부팅 검증을 완료했습니다.** 별도 표시한 **재현·점검 명령**은 이번 문서 정비에서 WSL에서 다시 실행한 결과가 아닙니다.
 
 ## 2. 작업 디렉터리
 
@@ -135,8 +135,8 @@ PARALLEL_MAKE = "-j 4"
 | Machine 및 Distribution 설정 | 완료 | `bitbake -e` 값 확인 기록 |
 | 병렬도 제한 | 완료 | `bitbake -e` 확인 기록 |
 | `init-build-env` 명령 재실행 | 이번 정비에서 미검증 | 공식 절차 보강 |
-| `core-image-minimal` 이미지 빌드 | 미진행 | 빌드 로그 없음 |
-| Raspberry Pi 4B 부팅 | 미진행 | 실장비 검증 기록 없음 |
+| `core-image-minimal` 이미지 빌드 | Chapter 1 당시 미진행 | 이후 [Chapter 3](03-arm64-image-build.md)에서 성공 |
+| Raspberry Pi 4B 부팅 | Chapter 1 당시 미진행 | 이후 [Chapter 5](05-raspberrypi-boot.md)에서 성공 |
 
 **Chapter 1 환경 구성 완료(기존 센터 기록 및 아래 집 노트북 검증 기준).** 센터의 원문 로그 및 검증 결과의 차이는 [센터 실행 근거](logs/01-center-setup.md)에서 확인할 수 있습니다. 이후 Chapter에서는 이미지 빌드, 산출물 분석, 실제 부팅을 각각 별도로 검증합니다.
 
@@ -177,7 +177,7 @@ Summary: There was 1 WARNING message.
 
 ## 다음 학습 — Chapter 2
 
-환경 구성을 마친 뒤 Layer·Recipe·Provider·Task를 실제 설정 파일과 BitBake 조회 결과로 분석했습니다. 후속 실습 기록은 [Chapter 2 — BitBake · Layer · Recipe](02-bitbake-layer-recipe.md)를 참조합니다. 해당 챕터에서 완료한 작업은 **조회·메타데이터 분석이며 이미지 빌드와 실장비 부팅은 아직 미진행**입니다.
+환경 구성을 마친 뒤 Layer·Recipe·Provider·Task를 실제 설정 파일과 BitBake 조회 결과로 분석했습니다. 후속 실습 기록은 [Chapter 2 — BitBake · Layer · Recipe](02-bitbake-layer-recipe.md)를 참조합니다. 해당 챕터의 작업 범위는 **조회·메타데이터 분석**이며, 그 시점에는 이미지 빌드와 실장비 부팅을 수행하지 않았습니다. 후속 결과는 [Chapter 3](03-arm64-image-build.md)과 [Chapter 5](05-raspberrypi-boot.md)에 기록했습니다.
 
 ## 참고 문서
 
