@@ -7,7 +7,7 @@
 **주제:** BitBake · Layer · Recipe · Provider · Task · Image · Configuration Fragment  
 **실습 기간:** 2026-10-24 ~ 2026-10-25 (대화 및 사용자 제공 로그 기준)  
 **대상 장비:** Raspberry Pi 4 Model B, ARM64 (AArch64)  
-**결과:** Chapter 2의 핵심 실습 완료. **`core-image-minimal` 전체 빌드 및 실장비 부팅은 아직 하지 않음.**
+**결과:** Chapter 2의 핵심 실습 완료. **이 장의 실습 시점에는 `core-image-minimal` 전체 빌드와 실장비 부팅을 수행하지 않았으며, 이후 센터 환경에서 [Chapter 3 이미지 빌드](03-arm64-image-build.md) 및 [Chapter 5 실장비 검증](05-raspberrypi-boot.md)을 완료함.**
 
 > **기록 원칙**
 > - **[실행 검증]** 이 대화에서 사용자가 명령 및 터미널 출력을 실제로 제공한 사항.
@@ -1142,4 +1142,4 @@ Chapter 1 집 검증값: BB_NUMBER_THREADS=2, PARALLEL_MAKE=-j 2 (Chapter 2 중 
 - Wic 이미지의 구체적인 파티션 구성과 최종 부팅 경로.
 - `rpi-base.inc`의 101번째 줄 이후 전체 원문.
 
-> **기록상 최종 상태:** Chapter 2 학습과 조회 중심 실습은 완료. **이미지 빌드는 다음 챕터에서 시작.**
+> **기록상 최종 상태(Chapter 2 당시):** 조회 중심 실습을 완료했으며, 이미지 빌드는 다음 단계로 계획했다. **후속 수행 결과:** [Chapter 3](03-arm64-image-build.md)에서 이미지 빌드 성공, [Chapter 5](05-raspberrypi-boot.md)에서 Raspberry Pi 4B 부팅 및 커널 모듈 수동 적재 검증 성공.
