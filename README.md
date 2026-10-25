@@ -4,14 +4,14 @@
 
 WSL2 환경에서 BitBake·OpenEmbedded 메타데이터를 분석하고, `core-image-minimal`을 빌드해 Raspberry Pi 4B에 배포했습니다. 이미지 생성에서 끝내지 않고 **UART 부팅·로그인, RootFS, Ethernet 연결, 외부 커널 모듈 삽입·제거**까지 실제 장비에서 확인한 과정과 문제 해결 근거를 기록합니다.
 
-> **현재 검증 범위:** 센터 빌드 환경에서 이미지 빌드 및 실장비 부팅을 완료했습니다. 별도의 집 개발 환경에서는 Recipe Parse와 메타데이터 분석을 수행했습니다. Custom C Application의 이미지 통합이나 Device Driver의 자동 패키징·로드까지 완료한 프로젝트는 아닙니다.
+> **현재 검증 범위:** **주 빌드 환경(센터)**에서 이미지 빌드 및 실장비 부팅을 완료했습니다. **보조 개발 환경(집)**에서는 Recipe Parse와 메타데이터 분석을 수행했습니다. Custom C Application의 이미지 통합이나 Device Driver의 자동 패키징·로드까지 완료한 프로젝트는 아닙니다.
 
 ## 검증 결과 한눈에 보기
 
 | 영역 | 확인한 결과 | 상세 기록 |
 |---|---|---|
-| BitBake / Layer 분석 | Recipe 992개 Parse, 0 errors; Provider·Task 의존성·Image 설정 확인 (**집 환경**) | [Chapter 2](docs/02-bitbake-layer-recipe.md) |
-| ARM64 이미지 빌드 | `core-image-minimal` 최초 빌드 **4,025 Tasks 성공** (**센터 환경**) | [Chapter 3](docs/03-arm64-image-build.md) |
+| BitBake / Layer 분석 | Recipe 992개 Parse, 0 errors; Provider·Task 의존성·Image 설정 확인 (**집**) | [Chapter 2](docs/02-bitbake-layer-recipe.md) |
+| ARM64 이미지 빌드 | `core-image-minimal` 최초 빌드 **4,025 Tasks 성공** (**센터**) | [Chapter 3](docs/03-arm64-image-build.md) |
 | 이미지 산출물 | ARM64 Kernel `Image`, Raspberry Pi 4B DTB, RootFS, Wic 이미지 확인; `.wic.bz2` 압축 무결성 검사 통과 | [Chapter 3](docs/03-arm64-image-build.md) |
 | 실장비 부팅 | Raspberry Pi 4B UART 콘솔 진입 및 `root` 로그인 성공 | [Chapter 5](docs/05-raspberrypi-boot.md) |
 | 시스템 / 통신 | Linux `6.18.33-v8`, AArch64 커널, ext4 RootFS; Ethernet DHCP 및 외부 IP ping **4/4** | [Chapter 5](docs/05-raspberrypi-boot.md) |
@@ -46,7 +46,7 @@ Host (WSL2 / x86-64)
 
 ## 개발 환경
 
-| 항목 | 주 빌드 환경 — 센터 | 로컬 개발 환경 — 집 |
+| 항목 | 센터 | 집 |
 |---|---|---|
 | Host OS | WSL2 Ubuntu 22.04 | WSL2 Ubuntu 26.04.1 LTS |
 | CPU / RAM | 24 논리 CPU / 15GiB | 8 논리 CPU / 7.6GiB |
