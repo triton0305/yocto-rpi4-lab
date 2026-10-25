@@ -2,13 +2,13 @@
 
 ## 1. 목표와 검증 범위
 
-WSL2 Ubuntu(x86-64)에서 Yocto Project 6.0.4(wrynose) 환경을 구성하고 Raspberry Pi 4B(ARM64)용 이미지 빌드를 준비한다. **센터의 기존 환경 구성 기록**과 **집 노트북의 후속 Parse 검증 기록**을 구분한다.
+WSL2 Ubuntu(x86-64)에서 Yocto Project 6.0.4(wrynose) 환경을 구성하고 Raspberry Pi 4B(ARM64)용 이미지 빌드를 준비한다. **센터의 기존 환경 구성 기록**과 **집의 후속 Parse 검증 기록**을 구분한다.
 
 이 문서의 **검증 완료** 표기는 기존 실습 기록에 근거합니다. 센터에서 확보된 초기화 오류 원문과 확인 결과는 [센터 실행 근거](logs/01-center-setup.md)에, 집에서 제공된 터미널 출력은 [집 실행 로그](logs/01-home-setup.md)에 분리했습니다. 이 Chapter 1 실습 당시에는 이미지 생성과 Raspberry Pi 실부팅을 수행하지 않았습니다. **이후 센터 환경에서 [Chapter 3](03-arm64-image-build.md)의 이미지 빌드와 [Chapter 5](05-raspberrypi-boot.md)의 실장비 부팅 검증을 완료했습니다.** 별도 표시한 **재현·점검 명령**은 이번 문서 정비에서 WSL에서 다시 실행한 결과가 아닙니다.
 
 ## 2. 작업 디렉터리
 
-센터 실습에서 사용한 경로는 다음과 같습니다. 집 노트북에서도 `pwd`, `command -v bitbake`와 Git 조회 결과로 해당 `poky-wrynose/build`·`layers` 경로 및 최상위 BitBake Clone 경로를 확인했습니다([집 실행 로그](logs/01-home-setup.md)).
+센터 실습에서 사용한 경로는 다음과 같습니다. 집에서도 `pwd`, `command -v bitbake`와 Git 조회 결과로 해당 `poky-wrynose/build`·`layers` 경로 및 최상위 BitBake Clone 경로를 확인했습니다([집 실행 로그](logs/01-home-setup.md)).
 
 ```text
 ~/study/rootfs/yocto/
@@ -54,7 +54,7 @@ source bitbake-builds/poky-wrynose/build/init-build-env
 
 이 스크립트는 현재 Shell에 빌드 환경을 적용하고 Build Directory로 이동하도록 준비합니다. 이후의 `../layers`는 **Build Directory 기준 상대 경로**입니다.
 
-**기록 구분:** [센터 초기화 오류 원문](logs/01-center-setup.md#1-bitbake-초기화-중-locale-오류--원문-발췌)에서는 `bitbake-setup init`의 내부 `init-build-env` 호출을 확인했지만 센터의 별도 수동 `source` 로그는 없습니다. **집 노트북은 `source` 실행 뒤 `pwd`와 `command -v bitbake`를 확인한 원문 출력이 있습니다**([집 실행 로그](logs/01-home-setup.md#7-build-environment-진입-및-초기-layer--실행-로그)). 이번 문서 수정 과정에서 WSL을 직접 재실행하지는 않았습니다.
+**기록 구분:** [센터 초기화 오류 원문](logs/01-center-setup.md#1-bitbake-초기화-중-locale-오류--원문-발췌)에서는 `bitbake-setup init`의 내부 `init-build-env` 호출을 확인했지만 센터의 별도 수동 `source` 로그는 없습니다. **집에서는 `source` 실행 뒤 `pwd`와 `command -v bitbake`를 확인한 원문 출력이 있습니다**([집 실행 로그](logs/01-home-setup.md#7-build-environment-진입-및-초기-layer--실행-로그)). 이번 문서 수정 과정에서 WSL을 직접 재실행하지는 않았습니다.
 
 ## 4. Locale 오류 해결 (수행·검증 기록)
 
@@ -138,13 +138,13 @@ PARALLEL_MAKE = "-j 4"
 | `core-image-minimal` 이미지 빌드 | Chapter 1 당시 미진행 | 이후 [Chapter 3](03-arm64-image-build.md)에서 성공 |
 | Raspberry Pi 4B 부팅 | Chapter 1 당시 미진행 | 이후 [Chapter 5](05-raspberrypi-boot.md)에서 성공 |
 
-**Chapter 1 환경 구성 완료(기존 센터 기록 및 아래 집 노트북 검증 기준).** 센터의 원문 로그 및 검증 결과의 차이는 [센터 실행 근거](logs/01-center-setup.md)에서 확인할 수 있습니다. 이후 Chapter에서는 이미지 빌드, 산출물 분석, 실제 부팅을 각각 별도로 검증합니다.
+**Chapter 1 환경 구성 완료(기존 센터 기록 및 아래 집 검증 기준).** 센터의 원문 로그 및 검증 결과의 차이는 [센터 실행 근거](logs/01-center-setup.md)에서 확인할 수 있습니다. 이후 Chapter에서는 이미지 빌드, 산출물 분석, 실제 부팅을 각각 별도로 검증합니다.
 
-## 9. 집 노트북 환경 구성 및 Recipe Parse 검증
+## 9. 집 환경 구성 및 Recipe Parse 검증
 
 이 절은 2026-10-22~23 집 WSL2에서 수행한 환경 구성과 Parse 검증의 **요약**입니다. 전체 명령어·출력 및 중복 Setup 정리 과정은 [집 Chapter 1 실행 로그](logs/01-home-setup.md)를 참조합니다. 수치는 사용자가 제공한 터미널 기록에 근거하며, GitHub 문서 수정 중 명령을 직접 재실행하지 않았습니다.
 
-| 항목 | 확인된 집 노트북 결과 |
+| 항목 | 집에서 확인한 결과 |
 |---|---|
 | Host OS | WSL2 Ubuntu 26.04.1 LTS |
 | 논리 CPU / RAM / Swap | 8 / 7.6GiB / 2.0GiB |
