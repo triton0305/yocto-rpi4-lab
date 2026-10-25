@@ -398,6 +398,7 @@ Python -m serial.tools.miniterm COM9 115200 --raw --eol CR
 - **miniterm을 먼저 연 다음 Raspberry Pi 전원을 연결**하면 초기 로그 수집에 유리하다.
 
 **첫 이미지에서 확인한 출력:**
+
 ```text
 --- Miniterm on COM9  115200,8,N,1 ---
 Poky (Yocto Project Reference Distro) 6.0.4 raspberrypi4-64 /dev/ttyS0
@@ -796,7 +797,8 @@ find tmp/work-shared/raspberrypi4-64 \
   -name .config -type f \
   -exec grep -H '^CONFIG_MODULES=' {} \;
 
-bitbake -e virtual/kernel |  grep -E '^(B|STAGING_KERNEL_DIR|STAGING_KERNEL_BUILDDIR|KERNEL_VERSION)='
+bitbake -e virtual/kernel |
+  grep -E '^(B|STAGING_KERNEL_DIR|STAGING_KERNEL_BUILDDIR|KERNEL_VERSION)='
 ```
 
 **실제 출력:**
