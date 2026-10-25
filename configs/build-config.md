@@ -8,7 +8,7 @@
 
 | 항목 | 센터(학교) | 집 노트북 |
 |---|---|---|
-| Host | WSL2 Ubuntu (x86-64) | WSL2 Ubuntu 26.04.1 LTS (x86-64) |
+| Host | WSL2 Ubuntu 22.04 (Chapter 1·5 기록 기준) | WSL2 Ubuntu 26.04.1 LTS (x86-64) |
 | WSL2 RAM | 15GiB | 7.6GiB |
 | 논리 CPU | 24개(기존 기록) | **8개** (`nproc` 출력) |
 | Yocto | 6.0.4 (wrynose) | 6.0.4 (wrynose) |
@@ -81,17 +81,18 @@ bitbake-layers show-layers
 
 센터 기존 실습 기록에서는 `MACHINE=raspberrypi4-64`, `DISTRO=poky`, 센터 병렬도 값 적용 및 `raspberrypi` Layer Priority 9를 확인했습니다. 집 노트북에서는 `bitbake -e`로 `MACHINE`, `DISTRO`, 병렬도 `2 / -j 2`의 실제 출력이 확보됐고 `bitbake -p` 또한 정상 종료했습니다. 출력 상세는 [집 실행 로그](../docs/logs/01-home-setup.md)에 있습니다. 이번 문서 수정 중 WSL에 접속하여 재측정하지는 않았습니다.
 
-## 5. 이미지 빌드 상태
+## 5. 이미지 빌드 및 실장비 검증 현황
 
 - [x] Build Environment 및 BSP Layer 구성 (기존 기록)
 - [x] Target Machine·병렬도 설정 확인 (센터의 기존 기록)
 - [x] 집 노트북 `bitbake -p` Parse 정상 종료 (사용자 제공 결과)
-- [ ] `core-image-minimal` 이미지 빌드
-- [ ] Raspberry Pi 4B에서 이미지 부팅 확인
+- [x] 센터 환경 `core-image-minimal` 최초 빌드 성공 — [Chapter 3](../docs/03-arm64-image-build.md) (4,025 Tasks 모두 성공)
+- [x] Raspberry Pi 4B UART 부팅·root 로그인·Ethernet 검증 — [Chapter 5](../docs/05-raspberrypi-boot.md)
+- [x] 외부 커널 모듈 `hello_drv.ko` 빌드·전송·수동 적재·제거 — [Chapter 5](../docs/05-raspberrypi-boot.md) (Chapter 8 전체 통합 완료는 아님)
 
 외부 Source Checkout 버전은 [소스 리비전](source-revisions.md) 문서에서 별도로 관리합니다.
 
-추가 메타데이터 분석과 `toolcfg.conf`, `bblayers.conf`, Provider 및 Image 설정의 실제 출력은 [Chapter 2 학습 기록](../docs/02-bitbake-layer-recipe.md)에서 확인할 수 있습니다. Chapter 2는 `local.conf` 전체를 새로 읽은 기록이 없으므로, 이미지 빌드 전 병렬 설정값을 재확인해야 합니다.
+추가 메타데이터 분석과 `toolcfg.conf`, `bblayers.conf`, Provider 및 Image 설정의 실제 출력은 [Chapter 2 학습 기록](../docs/02-bitbake-layer-recipe.md)에서 확인할 수 있습니다. Chapter 2에서는 `local.conf` 전체를 직접 읽지 않았습니다. 이후 **센터 환경**의 실제 이미지 빌드 결과는 Chapter 3에서 별도로 검증했으며, 집 노트북의 전체 이미지 빌드 성공을 의미하지 않습니다.
 
 ## 참고 문서
 
