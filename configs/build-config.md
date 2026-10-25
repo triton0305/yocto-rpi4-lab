@@ -4,9 +4,9 @@
 
 ## 1. 센터·집 설정 비교
 
-설정은 **개발 Host별로 다르게 적용**했습니다. 두 Host를 동일한 `local.conf` 설정으로 취급하지 않습니다. 아래 값은 센터의 기존 문서 및 집 노트북의 사용자 제공 검증 결과를 기준으로 합니다.
+설정은 **개발 Host별로 다르게 적용**했습니다. 두 Host를 동일한 `local.conf` 설정으로 취급하지 않습니다. 아래 값은 센터의 기존 문서 및 집에서 제공된 검증 결과를 기준으로 합니다.
 
-| 항목 | 센터(학교) | 집 노트북 |
+| 항목 | 센터 | 집 |
 |---|---|---|
 | Host | WSL2 Ubuntu 22.04 (Chapter 1·5 기록 기준) | WSL2 Ubuntu 26.04.1 LTS (x86-64) |
 | WSL2 RAM | 15GiB | 7.6GiB |
@@ -19,7 +19,7 @@
 | `PARALLEL_MAKE` | `-j 4` | `-j 2` |
 | `bitbake -p` | 별도 기록 없음 | 성공: 992 `.bb`, 0 errors, Exit 0 |
 
-설정 출처는 초기 `bitbake-setup`에서 선택한 `poky`, 활성화한 `machine/raspberrypi4-64` Fragment, BSP Layer 등록, 각 Host의 `build/conf/local.conf`입니다. 집 노트북에서는 `bitbake -e` 적용값의 실제 출력이 [집 실행 로그](../docs/logs/01-home-setup.md)에 보존되어 있습니다. 이 문서 수정 중 실제 WSL에서 새로 측정하지는 않았습니다.
+설정 출처는 초기 `bitbake-setup`에서 선택한 `poky`, 활성화한 `machine/raspberrypi4-64` Fragment, BSP Layer 등록, 각 Host의 `build/conf/local.conf`입니다. 집에서는 `bitbake -e` 적용값의 실제 출력이 [집 실행 로그](../docs/logs/01-home-setup.md)에 보존되어 있습니다. 이 문서 수정 중 실제 WSL에서 새로 측정하지는 않았습니다.
 
 ## 2. Target Machine과 Configuration Fragment
 
@@ -51,14 +51,14 @@ BB_NUMBER_THREADS = "4"
 PARALLEL_MAKE = "-j 4"
 ```
 
-**집 노트북의 `build/conf/local.conf` (사용자 제공 설정·적용값 검증 기록)**
+**집의 `build/conf/local.conf` (사용자 제공 설정·적용값 검증 기록)**
 
 ```conf
 BB_NUMBER_THREADS = "2"
 PARALLEL_MAKE = "-j 2"
 ```
 
-집 노트북은 보고된 RAM 7.6GiB를 고려해 센터보다 병렬도를 낮췄습니다. 이는 자원 사용을 줄이기 위한 설정이며, 전체 이미지 빌드 성공 여부나 필요 자원 충족을 증명하지 않습니다.
+집에서는 보고된 RAM 7.6GiB를 고려해 센터보다 병렬도를 낮췄습니다. 이는 자원 사용을 줄이기 위한 설정이며, 전체 이미지 빌드 성공 여부나 필요 자원 충족을 증명하지 않습니다.
 
 | 변수 | 역할 |
 |---|---|
@@ -79,20 +79,20 @@ bitbake-layers show-layers
 - 첫 번째 명령: BitBake의 실제 적용 변수 확인
 - 두 번째 명령: 현재 등록된 Layer와 Priority 확인
 
-센터 기존 실습 기록에서는 `MACHINE=raspberrypi4-64`, `DISTRO=poky`, 센터 병렬도 값 적용 및 `raspberrypi` Layer Priority 9를 확인했습니다. 집 노트북에서는 `bitbake -e`로 `MACHINE`, `DISTRO`, 병렬도 `2 / -j 2`의 실제 출력이 확보됐고 `bitbake -p` 또한 정상 종료했습니다. 출력 상세는 [집 실행 로그](../docs/logs/01-home-setup.md)에 있습니다. 이번 문서 수정 중 WSL에 접속하여 재측정하지는 않았습니다.
+센터 기존 실습 기록에서는 `MACHINE=raspberrypi4-64`, `DISTRO=poky`, 센터 병렬도 값 적용 및 `raspberrypi` Layer Priority 9를 확인했습니다. 집에서는 `bitbake -e`로 `MACHINE`, `DISTRO`, 병렬도 `2 / -j 2`의 실제 출력이 확보됐고 `bitbake -p` 또한 정상 종료했습니다. 출력 상세는 [집 실행 로그](../docs/logs/01-home-setup.md)에 있습니다. 이번 문서 수정 중 WSL에 접속하여 재측정하지는 않았습니다.
 
 ## 5. 이미지 빌드 및 실장비 검증 현황
 
 - [x] Build Environment 및 BSP Layer 구성 (기존 기록)
 - [x] Target Machine·병렬도 설정 확인 (센터의 기존 기록)
-- [x] 집 노트북 `bitbake -p` Parse 정상 종료 (사용자 제공 결과)
+- [x] 집 `bitbake -p` Parse 정상 종료 (사용자 제공 결과)
 - [x] 센터 환경 `core-image-minimal` 최초 빌드 성공 — [Chapter 3](../docs/03-arm64-image-build.md) (4,025 Tasks 모두 성공)
 - [x] Raspberry Pi 4B UART 부팅·root 로그인·Ethernet 검증 — [Chapter 5](../docs/05-raspberrypi-boot.md)
 - [x] 외부 커널 모듈 `hello_drv.ko` 빌드·전송·수동 적재·제거 — [Chapter 5](../docs/05-raspberrypi-boot.md) (Chapter 8 전체 통합 완료는 아님)
 
 외부 Source Checkout 버전은 [소스 리비전](source-revisions.md) 문서에서 별도로 관리합니다.
 
-추가 메타데이터 분석과 `toolcfg.conf`, `bblayers.conf`, Provider 및 Image 설정의 실제 출력은 [Chapter 2 학습 기록](../docs/02-bitbake-layer-recipe.md)에서 확인할 수 있습니다. Chapter 2에서는 `local.conf` 전체를 직접 읽지 않았습니다. 이후 **센터 환경**의 실제 이미지 빌드 결과는 Chapter 3에서 별도로 검증했으며, 집 노트북의 전체 이미지 빌드 성공을 의미하지 않습니다.
+추가 메타데이터 분석과 `toolcfg.conf`, `bblayers.conf`, Provider 및 Image 설정의 실제 출력은 [Chapter 2 학습 기록](../docs/02-bitbake-layer-recipe.md)에서 확인할 수 있습니다. Chapter 2에서는 `local.conf` 전체를 직접 읽지 않았습니다. 이후 **센터 환경**의 실제 이미지 빌드 결과는 Chapter 3에서 별도로 검증했으며, 집의 전체 이미지 빌드 성공을 의미하지 않습니다.
 
 ## 참고 문서
 
