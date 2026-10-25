@@ -1,53 +1,91 @@
 # Yocto Raspberry Pi 4 Lab
 
-Yocto Project로 Raspberry Pi 4B(ARM64)용 Embedded Linux 시스템을 구성하고, 실제 보드에서 검증하는 실습 저장소입니다.
+**Yocto Project 6.0.4 (`wrynose`) 기반 Raspberry Pi 4B용 ARM64 Embedded Linux 이미지 빌드 및 실장비 검증 기록**
 
-**주 빌드 환경**(Primary Build Host)과 **로컬 개발 환경**(Local Development Host)에 개발 환경을 구성했습니다. 로컬 개발 환경에서는 `bitbake -p`를 통한 Recipe Parse 검증까지 통과했습니다. Linux 이미지 빌드·실장비 부팅·Custom Layer 및 Recipe 통합은 아직 완료하지 않았습니다. 문서에는 **완료한 작업**과 **후속 학습 목표**를 구분하여 기록합니다.
+WSL2 환경에서 BitBake·OpenEmbedded 메타데이터를 분석하고, `core-image-minimal`을 빌드해 Raspberry Pi 4B에 배포했습니다. 이미지 생성에서 끝내지 않고 **UART 부팅·로그인, RootFS, Ethernet 연결, 외부 커널 모듈 삽입·제거**까지 실제 장비에서 확인한 과정과 문제 해결 근거를 기록합니다.
 
-## 목표
+> **현재 검증 범위:** 센터 빌드 환경에서 이미지 빌드 및 실장비 부팅을 완료했습니다. 별도의 집 개발 환경에서는 Recipe Parse와 메타데이터 분석을 수행했습니다. Custom C Application의 이미지 통합이나 Device Driver의 자동 패키징·로드까지 완료한 프로젝트는 아닙니다.
 
-- BitBake, OpenEmbedded, Layer, Recipe의 역할과 의존성 이해
-- Raspberry Pi 4B용 Linux 이미지 빌드와 산출물 분석
-- Custom Layer와 Recipe 작성 및 C Application 통합
-- Linux Kernel 및 Device Driver 통합
-- Raspberry Pi 4B에서 부팅·동작 검증 및 문제 해결 기록
+## 검증 결과 한눈에 보기
+
+| 영역 | 확인한 결과 | 상세 기록 |
+|---|---|---|
+| BitBake / Layer 분석 | Recipe 992개 Parse, 0 errors; Provider·Task 의존성·Image 설정 확인 (**집 환경**) | [Chapter 2](docs/02-bitbake-layer-recipe.md) |
+| ARM64 이미지 빌드 | `core-image-minimal` 최초 빌드 **4,025 Tasks 성공** (**센터 환경**) | [Chapter 3](docs/03-arm64-image-build.md) |
+| 이미지 산출물 | ARM64 Kernel `Image`, Raspberry Pi 4B DTB, RootFS, Wic 이미지 확인; `.wic.bz2` 압축 무결성 검사 통과 | [Chapter 3](docs/03-arm64-image-build.md) |
+| 실장비 부팅 | Raspberry Pi 4B UART 콘솔 진입 및 `root` 로그인 성공 | [Chapter 5](docs/05-raspberrypi-boot.md) |
+| 시스템 / 통신 | Linux `6.18.33-v8`, AArch64 커널, ext4 RootFS; Ethernet DHCP 및 외부 IP ping **4/4** | [Chapter 5](docs/05-raspberrypi-boot.md) |
+| 커널 모듈 선행 실습 | `hello_drv.ko` 빌드·전송·`insmod`·`dmesg`·`rmmod` 검증 | [Chapter 5](docs/05-raspberrypi-boot.md) |
+
+**주요 문제 해결:** 최초 이미지에서 부팅 후 `root` 로그인이 되지 않아 개발용 로그인 설정 Fragment를 적용하고 이미지를 증분 빌드·재기록해 로그인에 성공했습니다. 커널 메타데이터 Fetch 경고는 해당 Task의 최종 성공 여부를 로그로 구분했습니다. 원인과 확인되지 않은 부분은 각 Chapter에 별도로 명시했습니다.
+
+## 시스템 구성과 작업 흐름
+
+```text
+Host (WSL2 / x86-64)
+  ├─ Yocto Project 6.0.4 / BitBake 2.18.0
+  ├─ OpenEmbedded-Core + Poky + meta-raspberrypi
+  └─ MACHINE=raspberrypi4-64
+          │
+          ▼
+   bitbake core-image-minimal
+          │
+          ├─ Linux Kernel Image + Device Tree Blob
+          ├─ RootFS
+          └─ Wic SD-card image (.wic.bz2)
+                         │
+                         ▼
+              Raspberry Pi 4 Model B
+                ├─ UART console / root login
+                ├─ RootFS / kernel 확인
+                ├─ Ethernet / DHCP / ping
+                └─ hello_drv.ko 수동 적재·제거
+```
+
+**구분할 점:** `bitbake -p`의 Parse 성공은 전체 이미지 빌드 성공을 뜻하지 않습니다. 또한 `.wic.bz2`의 무결성 검사와 실장비 부팅 검증은 별개의 확인 단계입니다. Chapter 5의 커널 모듈은 수동으로 전송·적재했으며, 이미지에 기본 포함하거나 자동 로드한 결과는 아닙니다.
 
 ## 개발 환경
 
-| 항목 | 구성 |
-|---|---|
-| Host | WSL2 Ubuntu (x86-64) |
-| Target | Raspberry Pi 4 Model B (ARM64 / AArch64) |
-| Yocto Project | 6.0.4 (wrynose) |
-| DISTRO | `poky` |
-| MACHINE | `raspberrypi4-64` |
-| BSP Layer | `meta-raspberrypi` |
-
-Host별 빌드 자원과 병렬 설정은 다음과 같습니다.
-
-| 항목 | 주 빌드 환경 (Primary Build Host) | 로컬 개발 환경 (Local Development Host) |
+| 항목 | 주 빌드 환경 — 센터 | 로컬 개발 환경 — 집 |
 |---|---|---|
-| OS | WSL2 Ubuntu 22.04 | WSL2 Ubuntu 26.04.1 LTS |
-| 논리 CPU | 24 | 8 |
-| RAM | 15GiB | 7.6GiB |
+| Host OS | WSL2 Ubuntu 22.04 | WSL2 Ubuntu 26.04.1 LTS |
+| CPU / RAM | 24 논리 CPU / 15GiB | 8 논리 CPU / 7.6GiB |
 | `BB_NUMBER_THREADS` | `4` | `2` |
 | `PARALLEL_MAKE` | `-j 4` | `-j 2` |
+| 수행 범위 | 이미지 빌드·실장비 검증 | 환경 구성·Recipe Parse·메타데이터 분석 |
 
-환경 구성 절차는 [Chapter 1](docs/01-environment.md)에, 실제 출력 증거는 [주 빌드 환경 로그](docs/logs/01-center-setup.md)와 [로컬 개발 환경 로그](docs/logs/01-home-setup.md)에, 설정값의 의미는 [빌드 설정](configs/build-config.md)에 기록합니다.
+공통 Target 및 빌드 구성: **Raspberry Pi 4 Model B**, ARM64/AArch64, Yocto Project **6.0.4 (`wrynose`)**, `DISTRO=poky`, `MACHINE=raspberrypi4-64`, BSP Layer **`meta-raspberrypi`**.
 
-## 학습 진행 현황
+두 Host의 경로·자원·Checkout SHA는 혼용하지 않습니다. 환경별 상세 설정은 [Chapter 1](docs/01-environment.md), [빌드 설정](configs/build-config.md), [소스 리비전](configs/source-revisions.md)을 참조하세요.
 
-- [x] Chapter 1 — Yocto 개발 환경 구성
-- [x] Chapter 2 — BitBake · Layer · Recipe 구조 (메타데이터·Provider·Task 분석)
-- [ ] Chapter 3 — 최소 Linux 이미지 빌드
-- [ ] Chapter 4 — RootFS 및 빌드 산출물 분석
-- [ ] Chapter 5 — Raspberry Pi 4B 부팅 검증
-- [ ] Chapter 6 — Custom Layer 제작
-- [ ] Chapter 7 — Custom Recipe 및 C Application
-- [ ] Chapter 8 — Kernel 및 Device Driver 통합
-- [ ] Chapter 9 — 증분 빌드 · 의존성 · 오류 분석
+## 학습 및 검증 진행 현황
 
-체크한 항목은 사용자 제공 실습 기록을 기준으로 합니다. 로컬 개발 환경의 `bitbake -p`에서 `.bb` 992개, 2013 targets, 73 skipped, 0 errors 및 종료 코드 0을 확인했고, Chapter 2에서는 `bblayers.conf`, `layer.conf`, Machine·Distro 설정, Provider 최종값, BusyBox Task 의존성 및 Image 설정을 분석했습니다. **메타데이터 분석·Task 목록 조회·의존성 그래프 생성은 이미지 컴파일·생성·실장비 부팅의 성공을 뜻하지 않습니다.**
+| Chapter | 내용 | 상태 |
+|---|---|---|
+| [01](docs/01-environment.md) | 개발 환경 구성, Locale 오류 해결, BSP·Machine 설정 | 완료 |
+| [02](docs/02-bitbake-layer-recipe.md) | BitBake·Layer·Recipe·Provider·Task·Image 메타데이터 분석 | 완료 |
+| [03](docs/03-arm64-image-build.md) | ARM64 `core-image-minimal` 최초 빌드와 산출물 검증 | 완료 |
+| 04 | RootFS 및 이미지 산출물 심화 분석 | 별도 Chapter 미완료 |
+| [05](docs/05-raspberrypi-boot.md) | Raspberry Pi 4B UART 부팅, 로그인, 네트워크 및 모듈 선행 검증 | 완료 |
+| 06 | Custom Layer 제작 | 예정 |
+| 07 | Custom Recipe 및 C Application 통합 | 예정 |
+| 08 | Kernel / Device Driver 이미지 통합 | 예정 — 모듈 수동 적재만 선행 검증 |
+| 09 | 증분 빌드·의존성·오류 분석 심화 | 예정 — 일부 사례는 Chapter 3·5에 기록 |
+
+Chapter 4의 일부 주제(이미지 형식·파티션·마운트)는 Chapter 3·5에서 확인했지만 **Chapter 4 전체를 완료 처리하지 않았습니다.** Chapter 1·2에 남아 있는 과거의 ‘이미지 빌드 미진행’ 표현은 해당 실습 시점의 상태이며, 이후 센터에서 진행한 Chapter 3·5의 성공과 구분됩니다.
+
+## 문서 바로가기
+
+| 문서 | 핵심 내용 |
+|---|---|
+| [Chapter 1 — 환경 구성](docs/01-environment.md) | Setup, Locale 문제, BSP Layer 및 Machine 설정 |
+| [Chapter 2 — BitBake·Layer·Recipe](docs/02-bitbake-layer-recipe.md) | 실제 명령·출력으로 분석한 Provider, Task 의존성, 설정 |
+| [Chapter 3 — ARM64 Image Build](docs/03-arm64-image-build.md) | 4,025 Tasks 빌드, Fetch 경고 확인, 배포 산출물 검사 |
+| [Chapter 5 — 실장비 부팅·검증](docs/05-raspberrypi-boot.md) | Wic, UART, root 로그인 해결, Ethernet, `hello_drv.ko` |
+| [센터 환경 실행 근거](docs/logs/01-center-setup.md) | 환경 구성 오류 및 검증 기록 |
+| [집 환경 실행 로그](docs/logs/01-home-setup.md) | Setup, Checkout SHA, Parse 성공 기록 |
+| [빌드 설정](configs/build-config.md) | Host별 설정값과 의미 |
+| [소스 리비전](configs/source-revisions.md) | Checkout Commit SHA 및 재현성 확인 |
 
 ## 저장소 구조
 
@@ -60,32 +98,19 @@ yocto-rpi4-lab/
 └── docs/
     ├── 01-environment.md
     ├── 02-bitbake-layer-recipe.md
+    ├── 03-arm64-image-build.md
+    ├── 05-raspberrypi-boot.md
     └── logs/
         ├── 01-center-setup.md
         └── 01-home-setup.md
 ```
 
-위 구조는 본 문서 정비 후 GitHub `main` 브랜치에 게시된 것으로 기록된 파일을 표시합니다. `scripts/`, Custom Layer 및 Recipe 디렉터리는 필요할 때 생성하고 검증 후 추가할 예정입니다. 로그 파일명은 기존 GitHub 링크의 호환성을 위해 유지하되, 문서 안의 Host 명칭은 역할 기준으로 표기합니다.
+> 위 구조는 **Chapter 3·5 및 README 수정본을 GitHub에 함께 반영할 때의 목표 구조**입니다. 최종 반영 전에는 GitHub에 존재하는 파일 목록과 다를 수 있습니다.
 
-## 기술 문서
+## 기록 및 재현 원칙
 
-| 문서 | 역할 |
-|---|---|
-| [Chapter 1 — 개발 환경 구성](docs/01-environment.md) | 수행한 명령·원리·환경 검증 |
-| [Chapter 2 — BitBake · Layer · Recipe](docs/02-bitbake-layer-recipe.md) | Layer·Provider·Task·Image 설정 분석 및 실습 로그 |
-| [주 빌드 환경 — Chapter 1 실행 근거](docs/logs/01-center-setup.md) | 주 빌드 환경의 오류 원문·검증 결과·미확인 항목 |
-| [로컬 개발 환경 — Chapter 1 실행 로그](docs/logs/01-home-setup.md) | 로컬 개발 환경의 명령·실제 출력·Checkout SHA·Parse 결과 |
-| [빌드 설정](configs/build-config.md) | 설정값·적용 위치·동작 원리·확인 명령 |
-| [소스 리비전](configs/source-revisions.md) | 외부 저장소의 기록된 Commit SHA 및 재현성 점검 |
-
-## 관리 원칙
-
-- GitHub에는 직접 작성한 Source, Custom Layer, Recipe, 설정 설명과 검증 기록을 관리합니다.
-- Yocto 원본 Source, 다운로드 파일, 빌드 캐시, 이미지 등의 대용량 생성물은 커밋하지 않습니다.
-- 변경·문제 해결 기록에는 **현상 → 원인 → 해결 → 검증**을 남깁니다.
-- 실행하지 않은 명령은 확인 절차로 구분하고, 검증하지 않은 값은 추정하여 채우지 않습니다.
-- 주 빌드 환경과 로컬 개발 환경의 실제 Checkout Commit 및 Host 환경은 재현 전에 다시 대조합니다.
-
-## 현재 상태
-
-Chapter 1 개발 환경 구성 및 로컬 개발 환경의 BitBake Parse 검증을 완료했습니다(제공된 실습 결과 기준). Chapter 2의 Layer·Recipe·Provider·Task 조회 실습까지 완료했습니다(제공된 실습 기록 기준). 다음 단계는 Chapter 3의 `core-image-minimal` 첫 이미지 빌드이며, 이미지 빌드와 실장비 부팅은 아직 수행하지 않았습니다.
+- **실행한 명령·관찰된 출력·해석·미검증 사항**을 구분합니다.
+- 오류는 발생 현상과 후속 확인 결과를 기록하고, 증거가 없는 근본 원인은 단정하지 않습니다.
+- 센터와 집의 OS·병렬도·빌드 경로 및 Git SHA를 분리해 기술합니다.
+- 원본 Yocto Source, 다운로드 캐시, 이미지 및 빌드 산출물은 GitHub에 직접 커밋하지 않고, 생성 과정과 확인 결과를 문서화합니다.
+- Chapter 5의 비밀번호 없는 root 로그인 허용은 **실습용 설정**이며, 실제 배포용 보안 구성으로 권장하지 않습니다.
