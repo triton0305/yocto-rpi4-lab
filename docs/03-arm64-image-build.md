@@ -270,3 +270,8 @@ Chapter 3의 `.ext3` 파일은 **별도 RootFS 산출물**이고, Chapter 5의 e
 BitBake의 Fetch·Compile·Packaging·RootFS·이미지 조립을 거쳐 ARM64 산출물이 생성됨을 확인했다. 부팅·로그인·통신·커널 모듈의 실장비 검증은 [Raspberry Pi 4B 부팅 기록](05-raspberrypi-boot.md)에 별도로 정리했다.
 
 기록된 결과에는 빌드 Peak 자원 사용량, 정확한 빌드 소요 시간, 최초 Fetch 실패 원인과 실제 Mirror URL, 이미지 SHA-256 계산값이 포함되지 않는다.
+
+## 관련 산출물 분석
+
+- [Chapter 4 — RootFS·Wic 분석](04-rootfs-analysis.md): 이 장의 파일 형식 검사와 Chapter 5의 파티션·루트 마운트 결과를 연결한 분석
+- [Chapter 6 — Custom Layer·모듈·앱 Recipe](06-custom-layer.md): 기본 이미지 이후의 개별 소프트웨어 크로스 빌드·배포

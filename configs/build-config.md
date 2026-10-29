@@ -94,6 +94,19 @@ bitbake-layers show-layers
 
 `toolcfg.conf`, `bblayers.conf`, Provider 및 Image 설정의 조회 결과는 [BitBake·Layer·Recipe 분석](../docs/02-bitbake-layer-recipe.md)을 참조한다. 센터의 이미지 빌드와 실장비 검증은 [Chapter 3](../docs/03-arm64-image-build.md)·[Chapter 5](../docs/05-raspberrypi-boot.md)에 기록했다.
 
+## 6. 사용자 Layer와 실행 시스템 연결
+
+센터의 후속 모듈·앱 실습은 기존 `meta-yocto-lab`에서 진행했다. 커널 빌드는 `raspberrypi4-64`의 `6.18.33-v8`, 앱은 `aarch64-poky-linux` 타깃을 사용했다. 모듈 Recipe·앱 Recipe의 구성과 실제 빌드 출력은 [Chapter 6](../docs/06-custom-layer.md) 및 [검증 로그](../docs/logs/06-module-packaging.md)에 있다.
+
+| 구분 | 확인한 설정·결과 | 근거 |
+|---|---|---|
+| Kernel / modules | `CONFIG_MODULES=y`, `KERNEL_VERSION="6.18.33-v8"` | [Chapter 5 §10.1](../docs/05-raspberrypi-boot.md#101-모듈-빌드-가능-조건-확인) |
+| UART | SD `enable_uart=1`, `console=serial0,115200`; 실행 시 `ttyS0` | [Chapter 5 §5](../docs/05-raspberrypi-boot.md#5-uart-콘솔-설정과-첫-부팅) |
+| Init | 메타데이터 `sysvinit`, 부팅 로그 runlevel 5 | [Chapter 2](../docs/02-bitbake-layer-recipe.md#64-가상-런타임-변수의-최종값) · [Chapter 5](../docs/05-raspberrypi-boot.md#82-dhcp-동작-확인) |
+| 개발용 로그인 | root 로그인 Fragment 적용 후 증분 빌드·재로그인 | [Chapter 5 §6](../docs/05-raspberrypi-boot.md#6-root-로그인-허용-및-이미지-재빌드) |
+
+기존 UART 옵션은 SD 부팅 파티션에 수동 반영한 값이다. 8채널 GPIO 전용 이미지의 패키지·Overlay·자동 실행 구성은 [Chapter 7의 통합 설계](../docs/07-gpio-toggle-image.md)에서 별도로 설명한다.
+
 ## 참고 문서
 
 - [Yocto Project 6.0 — Configuration Fragments](https://docs.yoctoproject.org/6.0/ref-manual/fragments.html)

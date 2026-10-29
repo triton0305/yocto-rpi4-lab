@@ -1,4 +1,4 @@
-# Yocto Project — Chapter 2 학습 기록
+# Chapter 2 — BitBake·Layer·Recipe 메타데이터 분석
 
 > **관련 문서:** [Chapter 1 환경 구성](01-environment.md) · [Chapter 1 집 실행 로그](logs/01-home-setup.md) · [빌드 설정](../configs/build-config.md) · [Source SHA](../configs/source-revisions.md)
 
@@ -1103,3 +1103,7 @@ OE_FRAGMENTS += "distro/poky machine/raspberrypi4-64"
 | Wic | Yocto 디스크 이미지 생성 도구 이름 | `.wic` 디스크 이미지 제작 |
 | UART | Universal Asynchronous Receiver/Transmitter / 범용 비동기 송수신기 | 시리얼 통신·로그 확인 |
 
+## 관련 구현·검증
+
+- [Chapter 6 — Custom Layer·모듈·앱 Recipe](06-custom-layer.md): 이 장에서 분석한 Layer·Task·sysroot 구조를 실제 사용자 모듈·앱 빌드에 적용한 결과
+- [Chapter 4 — RootFS·Wic 분석](04-rootfs-analysis.md): Image 설정과 배포·실행 산출물의 연결
