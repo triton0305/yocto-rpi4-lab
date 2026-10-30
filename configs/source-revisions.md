@@ -72,8 +72,8 @@ git -C ../layers/meta-raspberrypi rev-parse HEAD
 
 | 저장소 | 조회한 HEAD | 용도 |
 |---|---|---|
-| `yocto-rpi4-lab` | `19a6e8f3b18434a6af17723ded8d1dff7bcf389c` | 기존 Chapter·설정·hello-drv 예제의 편집 기준선 |
-| `linux-system-programming` | `56a431d1e633d90f1bfe98a3a7bfaa026494862c` | 외부 모듈·앱·GPIO 원본의 고정 링크 기준 |
+| `yocto-rpi4-lab` | `19a6e8f3b18434a6af17723ded8d1dff7bcf389c` | Chapter·설정·hello-drv 예제를 참조한 당시 문서 기준선 |
+| `linux-system-programming` | `56a431d1e633d90f1bfe98a3a7bfaa026494862c` | 직접 개발한 모듈·앱·GPIO 소스의 고정 링크 기준 |
 
 이 절의 SHA는 **참조한 저장소 상태**다. 실제 실장비에서 사용한 모든 바이너리·활성 Overlay가 해당 HEAD에서 생성됐다고 소급하는 값이나 Yocto Git Fetcher의 적용 완료 `SRCREV`가 아니다. 기존 실습은 원본 파일을 Layer의 `files/`로 스테이징했다.
 
@@ -81,7 +81,7 @@ git -C ../layers/meta-raspberrypi rev-parse HEAD
 - [GPIO 모듈 Recipe](https://github.com/triton0305/linux-system-programming/blob/56a431d1e633d90f1bfe98a3a7bfaa026494862c/ch07-platform-gpio/yocto/lab-gpio_1.0.bb) · [GPIO 앱 Recipe](https://github.com/triton0305/linux-system-programming/blob/56a431d1e633d90f1bfe98a3a7bfaa026494862c/ch07-platform-gpio/yocto/lab-gpio-test_1.0.bb)
 - [8채널 Overlay 템플릿](https://github.com/triton0305/linux-system-programming/blob/56a431d1e633d90f1bfe98a3a7bfaa026494862c/ch07-platform-gpio/dt/lab-gpio-eight-overlay.dts) · [토글 앱](https://github.com/triton0305/linux-system-programming/blob/56a431d1e633d90f1bfe98a3a7bfaa026494862c/ch07-platform-gpio/userspace/lab_gpio_test.c)
 
-당시 배포 파일의 동일성은 별도 [SHA-256 로그](../docs/logs/06-module-packaging.md#3-동일한-배포-파일-확인)로 확인한다. 8채널 독립 토글의 사용자 실장비 확인과 원격 비활성 DT 템플릿의 구분은 [Chapter 7](../docs/07-gpio-toggle-image.md)에 정리했다.
+배포 파일의 동일성은 [SHA-256 검증 로그](../docs/logs/06-module-packaging.md#3-동일한-배포-파일-확인)로 확인한다. 8채널 독립 토글 실장비 확인 기록과 비활성 DT 템플릿의 적용 범위는 [Chapter 7](../docs/07-gpio-toggle-image.md)에 구분해 정리했다.
 
 ## 참고 문서
 

@@ -4,7 +4,7 @@
 
 **핵심 기술:** Yocto Project 6.0.4 (`wrynose`) · BitBake 2.18.0 · `meta-raspberrypi` BSP · Custom Layer / Recipe · Linux `6.18.33-v8` · ARM64
 
-BSP의 Machine·Kernel Provider와 패키지 의존성을 분석하고, `core-image-minimal`을 빌드해 보드에서 동작을 확인했습니다. 사용자 Layer에서는 커널 모듈과 C 테스트 앱을 타깃에 맞게 크로스 빌드했습니다.
+BSP의 Machine·Kernel Provider와 패키지 의존성을 분석하고, `core-image-minimal`을 빌드해 보드에서 동작을 확인했습니다. 또한 직접 작성한 커널 모듈과 C 테스트 애플리케이션을 사용자 Layer의 Recipe로 ARM64 타깃에 맞게 크로스 빌드하고 배포했습니다.
 
 ## 검증 결과 한눈에 보기
 
@@ -15,7 +15,7 @@ BSP의 Machine·Kernel Provider와 패키지 의존성을 분석하고, `core-im
 | RootFS / Wic | ARM64 Kernel·DTB·RootFS 식별, 압축 검사 통과; **172.4 MiB Wic의 2개 파티션** 확인 | [Chapter 4](docs/04-rootfs-analysis.md) |
 | 실장비 부팅·통신 | **UART root 로그인**, ext4 RootFS, Ethernet DHCP, 외부 IP ping **4/4** | [Chapter 5](docs/05-raspberrypi-boot.md) |
 | Custom Layer / Recipe | `hello_drv.ko` 빌드·적재·제거; 후속 모듈·C 앱 ARM64 빌드, `chain_lab.ko` 전송 SHA-256 일치 | [Chapter 6](docs/06-custom-layer.md) · [검증 로그](docs/logs/06-module-packaging.md) |
-| 재사용할 GPIO 기능 | 원본 프로젝트에서 **버튼 8개·LED 8개 전체 독립 토글 실장비 확인** | [Chapter 7 — 원본 구현과 통합 지점](docs/07-gpio-toggle-image.md) |
+| 8채널 GPIO 제어 | 직접 구현한 Platform Driver·C 애플리케이션으로 **버튼 8개·LED 8개 독립 토글 동작 확인** | [Chapter 7 — GPIO 시스템 통합 설계](docs/07-gpio-toggle-image.md) |
 
 **주요 문제 해결:** root 로그인 실패는 개발용 Configuration Fragment 적용·증분 빌드·재기록으로 해결했습니다. 외부 모듈의 `do_configure` 오류는 Makefile의 `clean` 규칙을 보완해 해결했고, 배포 파일은 Host·공유 폴더·Target의 해시를 대조했습니다.
 
@@ -33,9 +33,9 @@ flowchart TD
     H --> F
 ```
 
-이미지 빌드·실장비 검증은 **센터**, Recipe Parse·메타데이터 분석은 **집**에서 수행했습니다. 외부 모듈·앱은 개별 파일 전송으로 검증했습니다.
+이미지 빌드·실장비 검증은 **주 빌드 환경(센터)**, Recipe Parse·메타데이터 분석은 **보조 개발 환경(집)**에서 수행했습니다. 직접 작성한 외부 모듈·앱은 개별 파일 전송과 타깃 실행으로 검증했습니다.
 
-**최종 시스템 목표:** UART 콘솔과 기존 8채널 버튼·LED 토글 컨트롤러가 부팅 시 자동 실행되는 Raspberry Pi 4B용 최소 ARM64 이미지입니다. [Chapter 7](docs/07-gpio-toggle-image.md)에 검증된 GPIO 소프트웨어의 재사용 범위와 이미지 통합 설계를 정리했습니다.
+직접 개발한 GPIO 제어 기능의 **Yocto 이미지 통합 설계**는 [Chapter 7](docs/07-gpio-toggle-image.md)에 정리했습니다.
 
 ## 개발 환경
 
@@ -61,7 +61,7 @@ Host별 경로·설정은 [Chapter 1](docs/01-environment.md)과 [빌드 설정]
 | [Chapter 4 — RootFS·Wic 분석](docs/04-rootfs-analysis.md) | 산출물 역할, 부팅 파티션·RootFS, 빌드 설정과 실행 결과 연결 |
 | [Chapter 5 — 실장비 부팅·검증](docs/05-raspberrypi-boot.md) | UART, 로그인 정책·증분 빌드, Ethernet, hello-drv 실장비 로그 |
 | [Chapter 6 — Custom Layer·모듈·앱 Recipe](docs/06-custom-layer.md) | 소스 스테이징, Kbuild·sysroot, 빌드 오류 해결, 파일 무결성 |
-| [Chapter 7 — GPIO 소프트웨어 재사용·이미지 통합 설계](docs/07-gpio-toggle-image.md) | 8채널 독립 토글 성과, 원본 소스, DT·RootFS·자동 실행 연결 |
+| [Chapter 7 — GPIO Device Driver 및 Yocto 시스템 통합 설계](docs/07-gpio-toggle-image.md) | 직접 개발한 8채널 GPIO 제어, Device Tree·RootFS·부팅 서비스 구성 |
 | [실행 근거](docs/logs/06-module-packaging.md) | [센터 환경](docs/logs/01-center-setup.md) · [집 환경](docs/logs/01-home-setup.md) · 모듈 빌드·전송 |
 | [hello-drv 예제](examples/hello-drv/README.md) | 커널 모듈 C 소스, Makefile, Yocto Recipe |
 | [빌드 설정](configs/build-config.md) · [소스 리비전](configs/source-revisions.md) | 환경별 적용값과 고정 revision |
@@ -95,4 +95,4 @@ yocto-rpi4-lab/
         └── 06-module-packaging.md
 ```
 
-드라이버·GPIO 앱의 원본 구현은 [linux-system-programming](https://github.com/triton0305/linux-system-programming/blob/56a431d1e633d90f1bfe98a3a7bfaa026494862c/ch07-platform-gpio/userspace/lab_gpio_test.c)에서 관리합니다. 이 저장소는 BSP·빌드 메타데이터·이미지 생성·배포와 시스템 통합을 중심으로 정리합니다.
+직접 개발한 Linux Device Driver와 GPIO 제어 애플리케이션의 소스는 [linux-system-programming](https://github.com/triton0305/linux-system-programming/blob/56a431d1e633d90f1bfe98a3a7bfaa026494862c/ch07-platform-gpio/userspace/lab_gpio_test.c)에서 관리합니다. 이 저장소에는 해당 소프트웨어를 대상으로 한 Yocto 빌드 구성, ARM64 배포·검증 및 시스템 통합 설계를 기록합니다.

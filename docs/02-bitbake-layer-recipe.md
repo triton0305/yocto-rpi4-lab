@@ -271,7 +271,7 @@ LICENSE_PATH += "${LAYERDIR}/files/custom-licenses"
 
 - **학습 해석:** 부팅 관련 Recipe, Bluetooth 관련 Recipe, Raspberry Pi 테스트 이미지 Recipe가 탐색됐다.
 - **검증 한계:** 이 단계에서는 **파일 이름만 확인**했다. 해당 Recipe 내부의 정확한 설정 및 실제 빌드 여부는 확인하지 않았다.
-- **기존 지식 연결:** `rpi-u-boot-scr.bb`는 U-Boot용 스크립트와 관계 있는 Recipe 이름으로, 이전 U-Boot 학습과 연결된다.
+- **기술적 연결:** `rpi-u-boot-scr.bb`는 U-Boot 스크립트 관련 Recipe이며, 이 파일의 존재만으로 실제 부팅 체인에서 U-Boot 사용 여부를 확정할 수는 없다.
 
 ---
 
@@ -306,7 +306,7 @@ ls -l \
 - **파일 절대 경로:** `/home/triton/study/rootfs/yocto/bitbake-builds/poky-wrynose/layers/meta-yocto/meta-poky/conf/distro/poky.conf`
 - **실행 위치:** `BUILD_DIR`
 - **실행 명령:** `cat ../layers/meta-yocto/meta-poky/conf/distro/poky.conf`
-- **사용자가 직접 확인한 주요 원문:**
+- **터미널에서 조회한 설정 원문:**
 
 ```bitbake
 DISTRO = "poky"

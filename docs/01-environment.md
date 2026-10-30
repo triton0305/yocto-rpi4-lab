@@ -32,7 +32,7 @@ git clone https://git.openembedded.org/bitbake
 - `git clone`: `bitbake-setup`이 포함된 BitBake 소스를 가져옵니다.
 - `bitbake-setup init`: Configuration Template과 Target 선택에 따라 Yocto Setup 및 Build Directory를 생성합니다.
 
-기존 실습에서 기록한 선택 항목:
+센터 환경 구성 시 선택한 항목:
 
 | 항목 | 선택 |
 |---|---|
@@ -64,7 +64,7 @@ BitBake 서버 시작 시 다음 메시지가 나타났습니다.
 Please make sure locale 'en_US.UTF-8' is available on your system
 ```
 
-기존 실습에서 Ubuntu의 Locale을 생성하고 기본 Locale 설정을 변경했습니다.
+센터 Ubuntu에서 Locale을 생성하고 기본 Locale 설정을 변경했습니다.
 
 ```bash
 sudo locale-gen en_US.UTF-8
@@ -102,7 +102,7 @@ bitbake-config-build enable-fragment machine/raspberrypi4-64
 
 `machine/raspberrypi4-64` Fragment를 활성화하여 `MACHINE` 값을 구성합니다. Yocto 6.0의 `bitbake-config-build`는 활성화한 Fragment를 `build/conf/toolcfg.conf`의 `OE_FRAGMENTS`에 반영합니다. 이는 `local.conf`에 `MACHINE` 값을 직접 입력하는 방식과 구별됩니다.
 
-기존 `bitbake -e` 환경 변수 확인 결과:
+`bitbake -e` 환경 변수 확인 결과:
 
 ```text
 DISTRO="poky"
@@ -113,7 +113,7 @@ MACHINE_ARCH="raspberrypi4_64"
 
 ## 7. 빌드 병렬도 제한 (수행·검증 기록)
 
-센터 환경의 기존 기록상 WSL2 메모리 할당량은 15GiB입니다. 자원 사용을 제한하기 위해 센터의 `build/conf/local.conf`에 다음 값을 설정했습니다.
+센터 WSL2 메모리 할당량은 환경 구성 기록 기준 15GiB입니다. 자원 사용을 제한하기 위해 센터의 `build/conf/local.conf`에 다음 값을 설정했습니다.
 
 ```conf
 BB_NUMBER_THREADS = "4"
@@ -129,7 +129,7 @@ PARALLEL_MAKE = "-j 4"
 
 | 항목 | 상태 | 근거 |
 |---|---|---|
-| BitBake Setup 초기화 | 완료 | 기존 실습 기록 |
+| BitBake Setup 초기화 | 완료 | 센터 환경 구성 기록 |
 | Locale 문제 해결 | 완료 | `locale -a` 확인 기록 |
 | Raspberry Pi BSP 등록 | 완료 | `show-layers` 및 Priority 9 확인 기록 |
 | Machine 및 Distribution 설정 | 완료 | `bitbake -e` 값 확인 기록 |
@@ -138,7 +138,7 @@ PARALLEL_MAKE = "-j 4"
 | `core-image-minimal` 이미지 빌드 | Chapter 1 당시 미진행 | 이후 [Chapter 3](03-arm64-image-build.md)에서 성공 |
 | Raspberry Pi 4B 부팅 | Chapter 1 당시 미진행 | 이후 [Chapter 5](05-raspberrypi-boot.md)에서 성공 |
 
-**Chapter 1 환경 구성 완료(기존 센터 기록 및 아래 집 검증 기준).** 센터의 원문 로그 및 검증 결과의 차이는 [센터 실행 근거](logs/01-center-setup.md)에서 확인할 수 있습니다. 이후 Chapter에서는 이미지 빌드, 산출물 분석, 실제 부팅을 각각 별도로 검증합니다.
+**환경 구성 및 Parse 검증 완료.** 센터의 설정 기록과 집의 터미널 출력은 각각 [센터 실행 로그](logs/01-center-setup.md)와 [집 실행 로그](logs/01-home-setup.md)에서 확인할 수 있습니다. 이미지 빌드·산출물 분석·실장비 부팅 결과는 별도 Chapter에 정리했습니다.
 
 ## 9. 집 환경 구성 및 Recipe Parse 검증
 

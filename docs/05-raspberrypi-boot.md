@@ -1165,4 +1165,4 @@ Target에서 `passwd root`를 실행하면 현재 SD 카드의 파일이 바뀐�
 - [hello-drv 커널 모듈 소스 및 Recipe](../examples/hello-drv/README.md) — 실습에 사용한 모듈 코드와 빌드 메타데이터
 - [Chapter 4 — RootFS·Wic 분석](04-rootfs-analysis.md) — 배포 파일과 실제 부팅 시스템의 구성 관계
 - [Chapter 6 — Custom Layer·모듈·앱 Recipe](06-custom-layer.md) — 후속 모듈·앱 빌드, Task 오류 해결, 전송 파일 검증
-- [Chapter 7 — GPIO 재사용·이미지 통합 설계](07-gpio-toggle-image.md) — 검증된 8채널 기능과 DT·RootFS·자동 실행 연결
+- [Chapter 7 — GPIO Device Driver 및 Yocto 시스템 통합 설계](07-gpio-toggle-image.md) — 직접 개발한 8채널 GPIO 제어와 DT·RootFS·부팅 서비스 연결

@@ -96,7 +96,7 @@ bitbake-layers show-layers
 
 ## 6. 사용자 Layer와 실행 시스템 연결
 
-센터의 후속 모듈·앱 실습은 기존 `meta-yocto-lab`에서 진행했다. 커널 빌드는 `raspberrypi4-64`의 `6.18.33-v8`, 앱은 `aarch64-poky-linux` 타깃을 사용했다. 모듈 Recipe·앱 Recipe의 구성과 실제 빌드 출력은 [Chapter 6](../docs/06-custom-layer.md) 및 [검증 로그](../docs/logs/06-module-packaging.md)에 있다.
+센터에서 직접 개발한 모듈·앱의 Yocto 빌드·배포는 구성한 `meta-yocto-lab` Layer에서 진행했다. 커널 빌드는 `raspberrypi4-64`의 `6.18.33-v8`, 앱은 `aarch64-poky-linux` 타깃을 사용했다. 모듈 Recipe·앱 Recipe의 구성과 실제 빌드 출력은 [Chapter 6](../docs/06-custom-layer.md) 및 [검증 로그](../docs/logs/06-module-packaging.md)에 있다.
 
 | 구분 | 확인한 설정·결과 | 근거 |
 |---|---|---|
@@ -105,7 +105,7 @@ bitbake-layers show-layers
 | Init | 메타데이터 `sysvinit`, 부팅 로그 runlevel 5 | [Chapter 2](../docs/02-bitbake-layer-recipe.md#64-가상-런타임-변수의-최종값) · [Chapter 5](../docs/05-raspberrypi-boot.md#82-dhcp-동작-확인) |
 | 개발용 로그인 | root 로그인 Fragment 적용 후 증분 빌드·재로그인 | [Chapter 5 §6](../docs/05-raspberrypi-boot.md#6-root-로그인-허용-및-이미지-재빌드) |
 
-기존 UART 옵션은 SD 부팅 파티션에 수동 반영한 값이다. 8채널 GPIO 전용 이미지의 패키지·Overlay·자동 실행 구성은 [Chapter 7의 통합 설계](../docs/07-gpio-toggle-image.md)에서 별도로 설명한다.
+UART 옵션은 SD 부팅 파티션에 수동 반영한 설정이다. 8채널 GPIO 전용 이미지의 패키지·Overlay·자동 실행 구성은 [Chapter 7의 통합 설계](../docs/07-gpio-toggle-image.md)에서 별도로 설명한다.
 
 ## 참고 문서
 
