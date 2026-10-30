@@ -12,6 +12,8 @@
 - SHA-256: `be2a97c59ba7f2c2595130f14de9e09dfcf70ffda0cf3baa9a3d9001e48233eb`
 - [통합 구현과 소스](docs/07-gpio-toggle-image.md) · [최종 산출물·검증 보고서](docs/final-uart-gpio8-image.md) · [Host 증거 발췌](docs/logs/07-gpio-image-host.md)
 
+실장비 구성 사진과 GPIO 제어 경로는 [Chapter 7 — Hardware Setup](docs/07-gpio-toggle-image.md#hardware-setup--raspberry-pi-4b-gpio-실장비)에서 확인할 수 있습니다.
+
 ## 최종 시스템
 
 ```mermaid
