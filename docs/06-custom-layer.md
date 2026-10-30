@@ -47,7 +47,7 @@ inherit module
 
 후속 `chain-lab` 빌드는 `do_configure`의 `make clean`에서 중단됐다. `log.do_configure`에 해당하는 오류를 확인하고 Makefile에 모듈 중간 산출물을 정리하는 `clean:` 규칙을 추가했다. 이후 `do_configure`·`do_compile`과 전체 **1,028 Tasks**가 성공했다.
 
-같은 문제가 `thermal-core`에서도 관찰됐다. 반면 `no_llseek` 선언 오류는 `do_compile`의 커널 API 참조 문제였다. 실패 Task를 구분해 Makefile과 C 소스를 각각 수정했다. 오류 원문과 수정 후 출력은 [검증 로그](logs/06-module-packaging.md#1-do_configure-오류-해결)에 보존했다. Chapter 5의 `hello-drv` Makefile은 당시 기록으로 유지한다.
+같은 문제가 `thermal-core`에서도 관찰됐다. 반면 `no_llseek` 선언 오류는 `do_compile`의 커널 API 참조 문제였다. 실패 Task를 구분해 Makefile과 C 소스를 각각 수정했다. 오류 원문과 수정 후 출력은 [검증 로그](logs/06-module-packaging.md)에 보존했다. Chapter 5의 `hello-drv` Makefile은 당시 기록으로 유지한다.
 
 ## 4. C 테스트 앱의 타깃 크로스 빌드
 
