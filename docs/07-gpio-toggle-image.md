@@ -8,7 +8,7 @@
 
 ## Hardware Setup — Raspberry Pi 4B GPIO 실장비
 
-![Raspberry Pi 4B, 8채널 버튼 입력 보드, LED 출력 보드 및 GPIO 리본 케이블로 구성한 테스트 장치](images/gpio-hardware-setup.webp)
+![Raspberry Pi 4B, 8채널 버튼 입력 보드, LED 출력 보드 및 GPIO 리본 케이블로 구성한 테스트 장치](images/gpio-hardware-setup.jpg)
 
 *실제 시험 장비 구성: Raspberry Pi 4B, GPIO 리본 케이블, 8개 버튼이 있는 입력 보드, 8개 LED가 있는 출력 보드 및 브레드보드 배선. 사진에는 LED 점등 상태가 보인다.*
 
