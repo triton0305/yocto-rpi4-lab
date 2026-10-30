@@ -87,3 +87,33 @@ git -C ../layers/meta-raspberrypi rev-parse HEAD
 
 - [Yocto Project 6.0 — Quick Build](https://docs.yoctoproject.org/6.0/brief-yoctoprojectqs/index.html)
 - [Yocto Project 6.0 — Setting Up to Use the Yocto Project](https://docs.yoctoproject.org/6.0/dev-manual/start.html)
+
+## 2026-10-29 최종 GPIO 이미지 실측 리비전
+
+이번 접근 가능한 WSL checkout에서 직접 확인한 값이다. 기존 센터/집 기록과 별도로 유지한다.
+
+| 구성 | Git SHA |
+|---|---|
+| bitbake | `6e260eb6ab1631607ea414d9ff8ede1155faa5d9` |
+| openembedded-core | `636e5d3b12d54951c13d57346648bc29a0e6b24e` |
+| meta-yocto | `7c25b11156553145fa6b241a2d4f65d94438f804` |
+| meta-raspberrypi | `919588393f41b48cb6c5d832aa35e58a19b6762d` |
+| kernel | `95b85bebbedcaedfa7ca79116ed38b7376fba412` |
+| GPIO source | `56a431d1e633d90f1bfe98a3a7bfaa026494862c` |
+| 결과 저장소 시작 HEAD | `19a6e8f3b18434a6af17723ded8d1dff7bcf389c` |
+
+활성 `meta-yocto-lab`은 별도 Git checkout이 아니므로 SHA가 없다. 통합 사본은 이 저장소의 `layers/meta-yocto-lab`에서 관리한다. 실제 파일 해시는 로컬 `.local-artifacts/final-gpio/layer-files.sha256`에 기록했다.
+
+Driver/C 앱/UAPI/Makefile은 위 GPIO SHA에서 byte 동일 복사했다. DTS는 별도 사본의 8개 status만 okay로 활성화하고 설명을 수정했다. 실제 타깃 빌드 release는 `6.18.33-v8`. 기존 `local.conf`, `bblayers.conf`, `toolcfg.conf`는 백업과 동일하며 BBLAYERS 중복 추가가 없다. 기존 활성 Layer에 통합 파일만 동기화한다. [구현·빌드·Host 검증 및 재현 절차](../docs/final-uart-gpio8-image.md)를 따른다.
+
+## 2026-10-30 소스와 검증 기록의 대응
+
+문서 기준 revision은 `d1e99a338aa3e39c1e7f3adaebe669dcb1c72108`이고,
+2026-10-29 Host 통합 작업의 시작점은 위 표의 `19a6e8f3b18434a6af17723ded8d1dff7bcf389c`다.
+과거 센터/집 표와 2026-10-29 실제 빌드 checkout SHA는 서로 다른 시점의 기록으로 보존한다.
+
+이 저장소의 GPIO Layer 13개 파일은 실제 빌드 입력과 byte 동일성을 확인했다.
+활성 Layer의 다른 실습 Recipe까지 모두 이 저장소에 포함한 것은 아니다.
+고정 SHA의 Driver/C 앱/UAPI와 활성 DTS의 차이는 [Chapter 7](../docs/07-gpio-toggle-image.md)에 설명했다.
+배포 산출물의 SHA-256과 Git 소스 SHA는 구별하며, [최종 이미지 보고서](../docs/final-uart-gpio8-image.md)에서 각각 추적한다.
+[2026-10-30 HW 검증](../docs/logs/07-gpio-image-hardware-20261030.md)은 새 이미지에 대한 사용자 제공 결과다. 참조 저장소의 과거 HW 미검증 문서는 수정하지 않았다.

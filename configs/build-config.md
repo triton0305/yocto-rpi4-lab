@@ -105,9 +105,30 @@ bitbake-layers show-layers
 | Init | 메타데이터 `sysvinit`, 부팅 로그 runlevel 5 | [Chapter 2](../docs/02-bitbake-layer-recipe.md#64-가상-런타임-변수의-최종값) · [Chapter 5](../docs/05-raspberrypi-boot.md#82-dhcp-동작-확인) |
 | 개발용 로그인 | root 로그인 Fragment 적용 후 증분 빌드·재로그인 | [Chapter 5 §6](../docs/05-raspberrypi-boot.md#6-root-로그인-허용-및-이미지-재빌드) |
 
-UART 옵션은 SD 부팅 파티션에 수동 반영한 설정이다. 8채널 GPIO 전용 이미지의 패키지·Overlay·자동 실행 구성은 [Chapter 7의 통합 설계](../docs/07-gpio-toggle-image.md)에서 별도로 설명한다.
+위 표의 과거 기본 이미지 UART 옵션은 SD 부팅 파티션에 수동 반영한 설정이다. 8채널 GPIO 전용 이미지의 패키지·Overlay·자동 실행 구성은 [Chapter 7의 실제 통합 구현](../docs/07-gpio-toggle-image.md)에서 별도로 설명한다.
 
 ## 참고 문서
 
 - [Yocto Project 6.0 — Configuration Fragments](https://docs.yoctoproject.org/6.0/ref-manual/fragments.html)
 - [Yocto Project 6.0 — Variables Glossary](https://docs.yoctoproject.org/6.0/ref-manual/variables.html)
+
+## 7. 최종 GPIO 이미지 설정 — 2026-10-29 빌드·2026-10-30 HW 확인
+
+| 항목 | 기본 이미지 기록 | 최종 GPIO 이미지 |
+|---|---|---|
+| Recipe | `core-image-minimal` | `yocto-gpio-toggle-image` |
+| Task summary | 최초 4,025 Tasks 성공 | 4,128 Tasks 성공, 보존 로그 대조 |
+| WIC 크기 | 172.4 MiB 비압축 분석본 | 40,615,730 bytes 압축 / 229,847,040 bytes 비압축 |
+| 사용자 소프트웨어 | hello_drv 등 개별 파일 전송·수동 적재 | GPIO 모듈·앱·autostart 패키지 설치 |
+| GPIO Overlay | 이 기본 이미지 기록의 검증 대상 아님 | 활성 8채널 DTBO를 FAT `overlays/`에 포함 |
+| UART config | SD에서 수동 반영한 과거 기록 | 이미지 전용 bootfiles에 생성·WIC 내부 확인 |
+| root 로그인 | 개발용 empty-password Fragment | 이 이미지에서만 빈 암호 기능 제거, shadow·개별 비공개 hash |
+| Init | SysVinit | SysVinit 유지, S99/K01 GPIO 서비스 |
+| 이미지 형식 | 당시 tar.bz2/ext3/wic.bz2/wic.bmap | 최종 Image Recipe는 wic.bz2/wic.bmap |
+
+활성 `BBLAYERS`와 기존 `local.conf`/`toolcfg.conf`는 변경하지 않았다. [Image Recipe](../layers/meta-yocto-lab/recipes-core/images/yocto-gpio-toggle-image.bb)에
+이미지별 정책을 두어 기본 실습 이미지를 일괄 변경하지 않았다. source 및 실제 패키지 목록은
+[리비전](source-revisions.md), [Host 근거](../docs/logs/07-gpio-image-host.md), [최종 보고서](../docs/final-uart-gpio8-image.md)에서 이어진다.
+
+최종 이미지의 initial root 암호와 사용자가 실장비에서 변경한 암호는 구분한다. 후자는 재부팅 후에도 로그인 가능했다고 보고됐으며 값은 공개하지 않는다.
+최초 빌드의 초기 root 암호는 [인증 생성 절차](../docs/source-publication-review.md#인증-생성-절차)에 따라 개발자 로컬에서 준비한다. 생성 도구는 소스에 포함하며 비밀번호·hash 파일은 Git에서 제외한다.

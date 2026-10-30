@@ -79,3 +79,18 @@ UART는 명령·로그 콘솔, Ethernet/HTTP는 바이너리 전송 경로로 �
 검증한 배포 방식은 **개별 모듈·앱 빌드 → 파일 전송 → 수동 적재·실행**이다. Layer에 Recipe를 등록하는 일, 패키지를 RootFS에 선택하는 일, 부팅 시 실행하는 일은 각각 별도의 구성이다.
 
 [Chapter 4](04-rootfs-analysis.md)의 RootFS/Wic 분석을 바탕으로, [Chapter 7](07-gpio-toggle-image.md)에서는 직접 개발한 GPIO Driver·Application을 모듈 패키지·Overlay·RootFS·부팅 서비스의 시스템 통합 구성과 연결한다. 실제 빌드 설정과 소스 기준은 [build-config](../configs/build-config.md)·[source-revisions](../configs/source-revisions.md)에서 연결한다.
+
+## 7. 최종 GPIO 이미지와의 차이 및 공개 범위
+
+이 장의 개별 모듈·앱 실행과 HTTP 전송 실증은 그대로 보존한다. 2026-10-29에는 GPIO 모듈·앱·DTBO·SysV 서비스를
+`yocto-gpio-toggle-image`에 설치하는 Task 의존성까지 연결했고, 2026-10-30 사용자가 최종 WIC의 자동 실행을 확인했다.
+[Chapter 7](07-gpio-toggle-image.md)의 실제 파일 링크에서 `file://` 입력 → Kbuild/교차 컴파일 → 패키지 → Image Recipe의 설치 목록을 추적할 수 있다.
+
+`inherit module`이 생성한 실제 ABI별 출력은 `kernel-module-lab-gpio-6.18.33-v8`이다.
+`lab-gpio` 메타패키지가 이를 의존하므로 커널 버전을 Image Recipe에 하드코딩할 필요가 없다.
+개별 Recipe 성공, rootfs 패키지 설치, 부팅 시 서비스 시작은 각각 [Host 로그](logs/07-gpio-image-host.md)와
+[HW 기록](logs/07-gpio-image-hardware-20261030.md)으로 확인한다.
+
+이 장의 Layer 경로 표는 **센터의 실제 빌드 Layer**를 설명한다. 이 저장소의 Layer에는 최종 GPIO 통합 13개 파일만 포함했고,
+`memory-lab`, `chain-lab`, `thermal-core`, thermal 테스트 등을 무작정 복사하지 않았다.
+기존 성과·고정 소스 링크·[모듈 검증 로그](logs/06-module-packaging.md)는 유지한다.

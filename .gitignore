@@ -1,0 +1,49 @@
+# Local verification, backups, and extracted filesystems
+.local-artifacts/
+/inspection/
+/backups/
+/review-backups/
+
+# Disk images and generated target binaries
+*.wic
+*.wic.*
+*.img
+*.img.*
+*.bmap
+*.ext2
+*.ext2.*
+*.ext3
+*.ext3.*
+*.ext4
+*.ext4.*
+*.rootfs.tar*
+*.ko
+*.ko.*
+*.dtb
+*.dtbo
+
+# Per-build credentials and local environment secrets
+gpio-private/
+root-password.txt
+root-password.hash
+.env
+.env.*
+*.pem
+*.key
+
+# Yocto build trees and caches
+/build/
+/build-*/
+/bitbake-builds/
+tmp/
+cache/
+.cache/
+downloads/
+sstate-cache/
+sstate-control/
+/deploy/
+
+# Python-generated files
+__pycache__/
+*.py[cod]
+.pytest_cache/

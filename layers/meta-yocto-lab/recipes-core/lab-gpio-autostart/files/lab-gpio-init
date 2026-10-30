@@ -1,0 +1,66 @@
+#!/bin/sh
+### BEGIN INIT INFO
+# Provides:          lab-gpio
+# Required-Start:    $local_fs
+# Required-Stop:     $local_fs
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Eight-channel GPIO polling controller
+### END INIT INFO
+APP=/usr/bin/lab_gpio_test
+NODES="/dev/lab_gpio-lab-gpio"
+for n in 1 2 3 4 5 6 7; do NODES="$NODES /dev/lab_gpio-lab-gpio-d$n"; done
+fail() { echo "lab-gpio: $*" >&2; return 1; }
+state_is() {
+    output=$("$APP" all toggle status) || return 1
+    printf '%s\n' "$output"
+    printf '%s\n' "$output" | awk -v state="$1" '
+        BEGIN {
+            expected["/dev/lab_gpio-lab-gpio:"]=1
+            for (i=1;i<=7;i++) expected["/dev/lab_gpio-lab-gpio-d" i ":"]=1
+        }
+        { if (!($1 in expected) || ++seen[$1]!=1 || NF!=4 ||
+              $2!="Toggle" || $3!="controller" || $4!=state ".") bad=1; count++ }
+        END { exit (bad || count!=8) }
+    '
+}
+start() {
+    modprobe lab_gpio || { fail "modprobe failed"; return 1; }
+    # 50 waits of 100 ms: at most 5 seconds of deliberate device waiting.
+    tries=0
+    while :; do
+        ready=1
+        for node in $NODES; do [ -c "$node" ] || ready=0; done
+        [ "$ready" = 1 ] && break
+        [ "$tries" -lt 50 ] || { fail "8 device nodes not ready after 50 waits"; return 1; }
+        sleep 0.1
+        tries=$((tries + 1))
+    done
+    if state_is running >/dev/null; then
+        echo "lab-gpio: all eight channels already running"
+        return 0
+    fi
+    state_is stopped >/dev/null || { fail "partial or unknown state; stop before start"; return 1; }
+    "$APP" all toggle start || { fail "controller start failed"; return 1; }
+    if ! state_is running; then
+        "$APP" all toggle stop
+        fail "not all eight channels running after start"
+        return 1
+    fi
+}
+stop() {
+    "$APP" all toggle stop || { fail "controller stop/OFF failed"; return 1; }
+    state_is stopped || { fail "controllers did not all stop"; return 1; }
+}
+mkdir -p /run/lab-gpio || exit 1
+chmod 0700 /run/lab-gpio || exit 1
+mkdir /run/lab-gpio/init.lock 2>/dev/null || { fail "another init operation is active"; exit 1; }
+trap 'rmdir /run/lab-gpio/init.lock' EXIT
+trap 'exit 1' HUP INT TERM
+case "${1:-}" in
+    start) start ;;
+    stop) stop ;;
+    restart) stop && start ;;
+    status) state_is running || exit 3 ;;
+    *) echo "Usage: $0 {start|stop|restart|status}" >&2; exit 2 ;;
+esac
