@@ -6,6 +6,14 @@
 >
 > **읽는 경로:** 이 장은 실제 소스와 통합 구조, [최종 보고서](final-uart-gpio8-image.md)는 산출물과 증거, [HW 기록](logs/07-gpio-image-hardware-20261030.md)은 UART 결과 요약·사용자 관찰의 범위를 다룬다.
 
+## Hardware Setup — Raspberry Pi 4B GPIO 실장비
+
+![Raspberry Pi 4B, 8채널 버튼 입력 보드, LED 출력 보드 및 GPIO 리본 케이블로 구성한 테스트 장치](images/gpio-hardware-setup.webp)
+
+*실제 시험 장비 구성: Raspberry Pi 4B, GPIO 리본 케이블, 8개 버튼이 있는 입력 보드, 8개 LED가 있는 출력 보드 및 브레드보드 배선. 사진에는 LED 점등 상태가 보인다.*
+
+이 사진은 Driver/App이 동작한 **물리적 테스트 환경**을 보여준다. 8개 버튼의 독립 동작·부팅 자동 시작·정상 stop은 한 장의 사진이 아닌 [HW-01~08 수락 기록](logs/07-gpio-image-hardware-20261030.md)의 UART 결과 요약 및 사용자의 육안 관찰로 확인했다. [GPIO 핀 매핑 표](#5-dtbo-빌드에서-fat-적용까지)는 DTS 기준 BCM offset이며 사진의 개별 와이어를 물리 핀 번호까지 추적해 검증한 자료는 아니다.
+
 ## 1. GPIO Driver·Application 구현 및 검증
 
 직접 개발한 `lab_gpio.ko` Platform Driver와 `lab_gpio_test` C 애플리케이션의 구현 소스는 `linux-system-programming`에서 관리한다. **2026-10-29 실장비에서 버튼 8개·LED 8개의 독립 토글 동작을 확인한 기록**을 바탕으로, 이 장에서는 해당 소프트웨어의 Yocto 이미지 통합 구조를 다룬다.
